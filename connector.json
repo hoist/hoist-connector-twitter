@@ -1,0 +1,30 @@
+
+{
+  "name": "Twitter",
+  "slug" : "twitter",
+  "url": "https://twitter.com/",
+  "auth_types" : {
+    "Public": {
+      "setup_help": "./samples/getting_started.md",
+      "requires_signing": true
+    }
+  },
+  "settings": [{
+    "key": "consumerKey",
+    "type" : "text",
+    "description": "Consumer Key",
+    "for_types": ["Public"],
+    "required": true
+  },{
+    "key": "consumerSecret",
+    "type" : "text",
+    "description": "Consumer Secret",
+    "for_types": ["Public"],
+    "required": true
+  }],
+  "samples" : {
+    "getting_started" : "./samples/getting_started.js"
+  },
+  "endpoints" : {
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "Hoist": {
+    "domains": {
+      "bouncer": "bouncer.hoist.test"
+    }
+  },
+  "consumerKey": "ODvxSlAsb1XDkGyK9N27PrUFk",
+  "consumerSecret": "nrPwqz6YP5mqLekHpFHMXXbteqogmMYAhrbPvaulTcksGHoaNe"
+}
