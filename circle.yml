@@ -21,19 +21,19 @@ dependencies:
     - "~/docker"
   override:
     - mkdir -p ~/docker
-    - if [[ -e ~/docker/connector-slack.tar ]]; then docker load -i ~/docker/connector-slack.tar; fi
-    - docker build -t hoist/connector-slack:${CIRCLE_BRANCH//feature\//} .
-    - docker save "hoist/connector-slack" > ~/docker/connector-slack.tar
+    - if [[ -e ~/docker/connector-twitter.tar ]]; then docker load -i ~/docker/connector-twitter.tar; fi
+    - docker build -t hoist/connector-twitter:${CIRCLE_BRANCH//feature\//} .
+    - docker save "hoist/connector-twitter" > ~/docker/connector-twitter.tar
 test:
   override:
     - docker kill mongodb; true;
     - docker rm mongodb; true;
-    - docker kill hoist-connector-slack-test; true;
-    - docker rm hoist-connector-slack-test; true;
+    - docker kill hoist-connector-twitter-test; true;
+    - docker rm hoist-connector-twitter-test; true;
     - docker run -d --name mongodb mongo
-    - docker run -t --link mongodb:db --name hoist-connector-slack-test --entrypoint gulp hoist/connector-slack:${CIRCLE_BRANCH//feature\//} test
+    - docker run -t --link mongodb:db --name hoist-connector-twitter-test --entrypoint gulp hoist/connector-twitter:${CIRCLE_BRANCH//feature\//} test
   post:
-    - docker cp hoist-connector-slack-test:/usr/src/app/coverage ~/
+    - docker cp hoist-connector-twitter-test:/usr/src/app/coverage ~/
 general:
   artifacts:
     - ~/coverage/*
@@ -47,7 +47,7 @@ deployment:
     commands:
       - echo ${DOCKER_CONFIG} > .dockercfg
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker push hoist/connector-slack:${CIRCLE_BRANCH//feature\//}
+      - docker push hoist/connector-twitter:${CIRCLE_BRANCH//feature\//}
 notify:
   webhooks:
     - url: https://overlord.hoist.io/api/webhook/circleci?api_token=xc1zrzacmxp9samlj9nya4gzay
