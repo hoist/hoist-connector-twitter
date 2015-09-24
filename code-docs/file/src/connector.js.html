@@ -37,7 +37,13 @@
 
 
 
-
+<div data-ice="functionWrap">
+  <h2><a href="function/">Function</a></h2>
+  <ul>
+    
+  <li data-ice="functionDoc"><span><a href="function/index.html#static-function-poll">poll</a></span></li>
+</ul>
+</div>
 
 
 
@@ -55,8 +61,6 @@ import {
   merge
 }
 from &apos;lodash&apos;;
-
-console.log(OAuthConnectorBase);
 
 let overrides = {
   requestTokenUri: &apos;https://api.twitter.com/oauth/request_token&apos;,
@@ -80,7 +84,15 @@ export default class TwitterConnector extends OAuthConnectorBase {
     super(merge({}, configuration, overrides));
     this._clientId = configuration.clientId;
   }
-
+  get(path) {
+    let baseUri = &apos;https://api.twitter.com/1.1&apos;;
+    this._logger.info({
+      path
+    }, &apos;performing a get request&apos;);
+    return this._performRequest(&apos;GET&apos;, `${baseUri}${path}`).then((result) =&gt; {
+      return JSON.parse(result[0]);
+    });
+  }
 }
 </code></pre>
 

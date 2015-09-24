@@ -42,8 +42,11 @@
   },
   "homepage": "https://github.com/hoist/hoist-connector-twitter",
   "dependencies": {
-    "@hoist/oauth-connector": "^1.0.1-pre.1",
+    "@hoist/errors": "^1.0.3",
+    "@hoist/logger": "^1.0.5",
+    "@hoist/oauth-connector": "^1.0.1-pre.3",
     "bluebird": "^2.9.34",
-    "lodash": "^3.10.1"
+    "lodash": "^3.10.1",
+    "moment": "^2.10.6"
   }
 }

@@ -9,7 +9,7 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import {\n  OAuthConnectorBase\n}\nfrom '@hoist/oauth-connector';\nimport {\n  merge\n}\nfrom 'lodash';\n\nconsole.log(OAuthConnectorBase);\n\nlet overrides = {\n  requestTokenUri: 'https://api.twitter.com/oauth/request_token',\n  accessTokenUri: 'https://api.twitter.com/oauth/access_token',\n  authorizationUri: 'https://api.twitter.com/oauth/authorize'\n};\n\n/**\n * A Hoist Connector for connecting to GitHub\n * @extends {OAuthConnectorBase}\n */\nexport default class TwitterConnector extends OAuthConnectorBase {\n\n  /**\n   * create a new connector\n   * @param {object} configuration - the configuration properties to use\n   * @param {string} configuration.consumerKey - the OAuth2 consumer key\n   * @param {string} configuration.consumerSecret - the OAuth consumer secret\n   */\n  constructor(configuration) {\n    super(merge({}, configuration, overrides));\n    this._clientId = configuration.clientId;\n  }\n\n}\n"
+    "content": "import {\n  OAuthConnectorBase\n}\nfrom '@hoist/oauth-connector';\nimport {\n  merge\n}\nfrom 'lodash';\n\nlet overrides = {\n  requestTokenUri: 'https://api.twitter.com/oauth/request_token',\n  accessTokenUri: 'https://api.twitter.com/oauth/access_token',\n  authorizationUri: 'https://api.twitter.com/oauth/authorize'\n};\n\n/**\n * A Hoist Connector for connecting to GitHub\n * @extends {OAuthConnectorBase}\n */\nexport default class TwitterConnector extends OAuthConnectorBase {\n\n  /**\n   * create a new connector\n   * @param {object} configuration - the configuration properties to use\n   * @param {string} configuration.consumerKey - the OAuth2 consumer key\n   * @param {string} configuration.consumerSecret - the OAuth consumer secret\n   */\n  constructor(configuration) {\n    super(merge({}, configuration, overrides));\n    this._clientId = configuration.clientId;\n  }\n  get(path) {\n    let baseUri = 'https://api.twitter.com/1.1';\n    this._logger.info({\n      path\n    }, 'performing a get request');\n    return this._performRequest('GET', `${baseUri}${path}`).then((result) => {\n      return JSON.parse(result[0]);\n    });\n  }\n}\n"
   },
   {
     "kind": "variable",
@@ -23,7 +23,7 @@
     "importPath": "hoist-connector-twitter/src/connector.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 12,
+    "lineNumber": 10,
     "undocument": true,
     "type": {
       "types": [
@@ -43,7 +43,7 @@
     "importPath": "hoist-connector-twitter/src/connector.js",
     "importStyle": "TwitterConnector",
     "description": "A Hoist Connector for connecting to GitHub",
-    "lineNumber": 22,
+    "lineNumber": 20,
     "interface": false,
     "extends": [
       "OAuthConnectorBase"
@@ -58,7 +58,7 @@
     "longname": "src/connector.js~TwitterConnector#constructor",
     "access": null,
     "description": "create a new connector",
-    "lineNumber": 30,
+    "lineNumber": 28,
     "params": [
       {
         "nullable": null,
@@ -102,13 +102,362 @@
     "longname": "src/connector.js~TwitterConnector#_clientId",
     "access": null,
     "description": null,
-    "lineNumber": 32,
+    "lineNumber": 30,
     "undocument": true,
     "type": {
       "types": [
         "*"
       ]
     }
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "get",
+    "memberof": "src/connector.js~TwitterConnector",
+    "longname": "src/connector.js~TwitterConnector#get",
+    "access": null,
+    "description": null,
+    "lineNumber": 32,
+    "undocument": true,
+    "params": [
+      {
+        "name": "path",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/poll.js",
+    "memberof": null,
+    "longname": "src/poll.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import TwitterConnector from './connector';\nimport logger from '@hoist/logger';\nimport Moment from 'moment'\nimport errors from '@hoist/errors';\n\n\nvar APILimitReachedError = errors.create({\n  name: 'APILimitReachedError'\n});\n\nvar ConnectorRequiresAuthorizationError = errors.create({\n  name: 'ConnectorRequiresAuthorizationError'\n});\n\nlet frequency = 90; //poll every 90 seconds\n\nclass TwitterPoller {\n  constructor(context) {\n    this._logger = logger.child({\n      cls: this.constructor.name,\n      subscription: context.subscription._id,\n      application: context.application._id\n    });\n    this._context = context;\n    this._connector = new TwitterConnector(context.settings);\n  }\n  poll() {\n    return this.assertCanPoll()\n      .then(() => {\n        this._context.subscription.set('lastPolled', Moment.utc().format());\n      })\n      .then(() => {\n        return this.pollSubscription()\n      }).catch((err) => {\n        this._logger.error(err);\n        if (!(err instanceof APILimitReachedError) && !(err instanceof ConnectorRequiresAuthorizationError)) {\n          this._logger.alert(err);\n        }\n      });\n  }\n  assertCanPoll() {\n    var lastPolled = this._context.subscription.get('lastPolled');\n    return Promise.resolve()\n      .then(() => {\n        this._logger.info({\n          lastPolled: lastPolled\n        }, 'checking if the poll can happen');\n        if (lastPolled && new Moment(lastPolled).isAfter(new Moment().subtract(frequency, 'seconds'))) {\n          this._logger.warn('Poller limit reached');\n          this._context.subscription.delayTill(new Moment(lastPolled).add(frequency, 'seconds').toDate());\n          throw new APILimitReachedError();\n        }\n      }).then(() => {\n        this._logger.info('checking credentials');\n        if (!(this._context.authorization)) {\n          this._logger.warn('Connector needs auth and no auth set');\n          if (!lastPolled) {\n            lastPolled = moment().toDate();\n          }\n          this._context.subscription.delayTill(moment(lastPolled).add(frequency, 'seconds').toDate());\n          throw new ConnectorRequiresAuthorizationError();\n        }\n      });\n  }\n  pollSubscription() {\n    return Promise.resolve()\n      .then(() => {\n        this._logger.info('setting connector authorization');\n        return this._connector.authorize(this._context.authorization);\n      }).then(() => {\n        this._logger.info('polling endpoints');\n        return Promise.all(this._context.subscription.endpoints.map((endpoint) => {\n          return this.pollEndpoint(endpoint);\n        }));\n      }).then(() => {\n        this._logger.info('subscription polled');\n      });\n  }\n  pollEndpoint(endpoint) {\n    if (endpoint.toLowerCase() === \"mentions\") {\n      return this.pollMentions();\n    } else if (endpoint.toLowerCase() === \"directmessages\") {\n      return this.pollDirectMessages();\n    }\n  }\n  pollMentions() {\n    return Promise.resolve()\n      .then(() => {\n        let endpointMeta = this._context.subscription.get('mentions');\n        if (!endpointMeta) {\n          endpointMeta = {}\n        }\n        let path = \"/statuses/mentions_timeline.json?contributor_details=true\";\n        if (endpointMeta.lastId) {\n          path = path + \"&since_id=\" + endpointMeta.lastId;\n        }\n        return this._connector.get(path)\n          .then((mentions) => {\n            this._logger.info({\n              mentions: mentions.length\n            }, 'got mentions');\n            if (mentions.length > 0) {\n              let latest = mentions[0];\n              this._logger.info('processing mentions');\n              return Promise.all(mentions.map((mention) => {\n\n                if (endpointMeta && mention.id > endpointMeta.lastId) {\n                  if (mention.id > latest.id) {\n                    this._logger.info({\n                      id: mention.id\n                    }, 'updating id');\n                    latest = mention;\n                  }\n                  this._logger.info('processing mention');\n                  return this.processMention(mention);\n                } else {\n                  this._logger.info({\n                    mention: mention\n                  }, 'mention id was less than last id')\n                }\n              })).then(() => {\n                endpointMeta.lastId = latest.id;\n                return this._context.subscription.set('mentions', endpointMeta);\n              });\n            } else {\n              this._logger.info('no mentions to process');\n            }\n          });\n      })\n  }\n  processMention(mention) {\n    this._logger.info({\n      mention: mention.id\n    }, 'raising event for new mention');\n    var eventName = `${this._context.connectorKey}:new:mention`;\n    return this.emit(eventName, mention);\n  }\n}\n\nexport default function (context, raiseMethod) {\n  let poller = new TwitterPoller(context);\n  poller.emit = raiseMethod;\n  return poller.poll();\n};\n"
+  },
+  {
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "APILimitReachedError",
+    "memberof": "src/poll.js",
+    "longname": "src/poll.js~APILimitReachedError",
+    "access": null,
+    "export": false,
+    "importPath": "hoist-connector-twitter/src/poll.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "ConnectorRequiresAuthorizationError",
+    "memberof": "src/poll.js",
+    "longname": "src/poll.js~ConnectorRequiresAuthorizationError",
+    "access": null,
+    "export": false,
+    "importPath": "hoist-connector-twitter/src/poll.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "frequency",
+    "memberof": "src/poll.js",
+    "longname": "src/poll.js~frequency",
+    "access": null,
+    "export": false,
+    "importPath": "hoist-connector-twitter/src/poll.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 15,
+    "undocument": true,
+    "type": {
+      "types": [
+        "number"
+      ]
+    }
+  },
+  {
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "TwitterPoller",
+    "memberof": "src/poll.js",
+    "longname": "src/poll.js~TwitterPoller",
+    "access": null,
+    "export": false,
+    "importPath": "hoist-connector-twitter/src/poll.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 17,
+    "undocument": true,
+    "interface": false
+  },
+  {
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#constructor",
+    "access": null,
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "params": [
+      {
+        "name": "context",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "generator": false
+  },
+  {
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_logger",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#_logger",
+    "access": null,
+    "description": null,
+    "lineNumber": 19,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_context",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#_context",
+    "access": null,
+    "description": null,
+    "lineNumber": 24,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_connector",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#_connector",
+    "access": null,
+    "description": null,
+    "lineNumber": 25,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "poll",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#poll",
+    "access": null,
+    "description": null,
+    "lineNumber": 27,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "assertCanPoll",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#assertCanPoll",
+    "access": null,
+    "description": null,
+    "lineNumber": 41,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "pollSubscription",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#pollSubscription",
+    "access": null,
+    "description": null,
+    "lineNumber": 65,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "pollEndpoint",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#pollEndpoint",
+    "access": null,
+    "description": null,
+    "lineNumber": 79,
+    "undocument": true,
+    "params": [
+      {
+        "name": "endpoint",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "pollMentions",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#pollMentions",
+    "access": null,
+    "description": null,
+    "lineNumber": 86,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "processMention",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#processMention",
+    "access": null,
+    "description": null,
+    "lineNumber": 131,
+    "undocument": true,
+    "params": [
+      {
+        "name": "mention",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "poll",
+    "memberof": "src/poll.js",
+    "longname": "src/poll.js~poll",
+    "access": null,
+    "export": true,
+    "importPath": "hoist-connector-twitter/src/poll.js",
+    "importStyle": "poll",
+    "description": null,
+    "lineNumber": 140,
+    "undocument": true,
+    "params": [
+      {
+        "name": "context",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "raiseMethod",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
   },
   {
     "kind": "external",
@@ -847,5 +1196,56 @@
     "access": null,
     "description": "should receive a redirect",
     "lineNumber": 56
+  },
+  {
+    "kind": "testFile",
+    "static": true,
+    "variation": null,
+    "name": "tests/unit_tests/proxy_tests.js",
+    "memberof": null,
+    "longname": "tests/unit_tests/proxy_tests.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "'use strict';\nimport TwitterConnector from '../../lib/connector';\nimport {\n  functions\n}\nfrom 'lodash';\nimport {\n  expect\n}\nfrom 'chai';\n\nfunction TestES5() {\n\n}\nTestES5.prototype.get = function () {\n\n}\n\ndescribe('Connector', () => {\n  let _connector;\n  before(() => {\n    _connector = new TwitterConnector({});\n  })\n  describe('functions', () => {\n    it('should have methods expected', () => {\n      console.log(_connector.get);\n      console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(new TestES5())));\n      console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(_connector)));\n    })\n  });\n});\n"
+  },
+  {
+    "kind": "testDescribe",
+    "static": true,
+    "variation": null,
+    "name": "describe6",
+    "testId": 6,
+    "memberof": "tests/unit_tests/proxy_tests.js",
+    "testDepth": 0,
+    "longname": "tests/unit_tests/proxy_tests.js~describe6",
+    "access": null,
+    "description": "Connector",
+    "lineNumber": 19
+  },
+  {
+    "kind": "testDescribe",
+    "static": true,
+    "variation": null,
+    "name": "describe7",
+    "testId": 7,
+    "memberof": "tests/unit_tests/proxy_tests.js~describe6",
+    "testDepth": 1,
+    "longname": "tests/unit_tests/proxy_tests.js~describe6.describe7",
+    "access": null,
+    "description": "functions",
+    "lineNumber": 24
+  },
+  {
+    "kind": "testIt",
+    "static": true,
+    "variation": null,
+    "name": "it8",
+    "testId": 8,
+    "memberof": "tests/unit_tests/proxy_tests.js~describe6.describe7",
+    "testDepth": 2,
+    "longname": "tests/unit_tests/proxy_tests.js~describe6.describe7.it8",
+    "access": null,
+    "description": "should have methods expected",
+    "lineNumber": 25
   }
 ]

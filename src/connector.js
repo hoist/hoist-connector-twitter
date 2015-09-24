@@ -7,8 +7,6 @@ import {
 }
 from 'lodash';
 
-console.log(OAuthConnectorBase);
-
 let overrides = {
   requestTokenUri: 'https://api.twitter.com/oauth/request_token',
   accessTokenUri: 'https://api.twitter.com/oauth/access_token',
@@ -31,5 +29,13 @@ export default class TwitterConnector extends OAuthConnectorBase {
     super(merge({}, configuration, overrides));
     this._clientId = configuration.clientId;
   }
-
+  get(path) {
+    let baseUri = 'https://api.twitter.com/1.1';
+    this._logger.info({
+      path
+    }, 'performing a get request');
+    return this._performRequest('GET', `${baseUri}${path}`).then((result) => {
+      return JSON.parse(result[0]);
+    });
+  }
 }

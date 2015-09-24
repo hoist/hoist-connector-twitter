@@ -1,9 +1,8 @@
-
 {
   "name": "Twitter",
-  "slug" : "twitter",
+  "slug": "twitter",
   "url": "https://twitter.com/",
-  "auth_types" : {
+  "auth_types": {
     "Public": {
       "setup_help": "./samples/getting_started.md",
       "requires_signing": true
@@ -11,20 +10,26 @@
   },
   "settings": [{
     "key": "consumerKey",
-    "type" : "text",
+    "type": "text",
     "description": "Consumer Key",
     "for_types": ["Public"],
     "required": true
-  },{
+  }, {
     "key": "consumerSecret",
-    "type" : "text",
+    "type": "text",
     "description": "Consumer Secret",
     "for_types": ["Public"],
     "required": true
   }],
-  "samples" : {
-    "getting_started" : "./samples/getting_started.js"
+  "samples": {
+    "getting_started": "./samples/getting_started.js"
   },
-  "endpoints" : {
+  "endpoints": {
+    "mentions": {
+      "sample": "./samples/endpoints/mentions.js",
+      "docs": "https://dev.twitter.com/rest/reference/get/statuses/mentions_timeline",
+      "subscribe": true,
+      "events": ["new"]
+    }
   }
 }

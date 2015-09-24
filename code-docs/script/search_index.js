@@ -6,6 +6,12 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
+    "hoist-connector-twitter/src/poll.js~poll",
+    "function/index.html#static-function-poll",
+    "<span>poll</span> <span class=\"search-result-import-path\">hoist-connector-twitter/src/poll.js</span>",
+    "function"
+  ],
+  [
     "builtinexternal/ecmascriptexternal.js~array",
     "external/index.html",
     "BuiltinExternal/ECMAScriptExternal.js~Array",
@@ -331,6 +337,24 @@ window.esdocSearchIndex = [
   ],
   [
     "",
+    "test-file/tests/unit_tests/proxy_tests.js.html#lineNumber19",
+    "Connector",
+    "test"
+  ],
+  [
+    "",
+    "test-file/tests/unit_tests/proxy_tests.js.html#lineNumber24",
+    "Connector functions",
+    "test"
+  ],
+  [
+    "",
+    "test-file/tests/unit_tests/proxy_tests.js.html#lineNumber25",
+    "Connector functions should have methods expected",
+    "test"
+  ],
+  [
+    "",
     "test-file/tests/integration_tests/auth_tests.js.html#lineNumber9",
     "authorization steps",
     "test"
@@ -378,9 +402,27 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/connector.js~twitterconnector#get",
+    "class/src/connector.js~TwitterConnector.html#instance-method-get",
+    "src/connector.js~TwitterConnector#get",
+    "method"
+  ],
+  [
+    "src/poll.js",
+    "file/src/poll.js.html",
+    "src/poll.js",
+    "file"
+  ],
+  [
     "tests/integration_tests/auth_tests.js",
     "test-file/tests/integration_tests/auth_tests.js.html",
     "tests/integration_tests/auth_tests.js",
+    "testFile"
+  ],
+  [
+    "tests/unit_tests/proxy_tests.js",
+    "test-file/tests/unit_tests/proxy_tests.js.html",
+    "tests/unit_tests/proxy_tests.js",
     "testFile"
   ]
 ]
