@@ -45,7 +45,6 @@ deployment:
     branch: [master,/feature\/.*/]
     owner: hoist
     commands:
-      - echo ${DOCKER_CONFIG} > .dockercfg
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker push hoist/connector-twitter:${CIRCLE_BRANCH//feature\//}
 notify:
