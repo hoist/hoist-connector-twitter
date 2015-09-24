@@ -1,0 +1,19 @@
+[Unit]
+Description=Deployment for twitter Connector
+Requires=config.service
+After=config.service
+
+[Service]
+User=core
+Type=oneshot
+ExecStartPre=-/usr/bin/docker kill twitter-connector-deploy
+ExecStartPre=-/usr/bin/docker rm twitter-connector-deploy
+ExecStartPre=-/usr/bin/docker pull hoist/connector-twitter:master
+ExecStart=/usr/bin/docker run -h twitter-connector-deploy --name twitter-connector-deploy -e "ROOT_CONNECTOR_DIR=/shares/connectors" --volumes-from config -P hoist/connector-twitter:master
+ExecStop=/usr/bin/docker stop twitter-connector-deploy
+ExecStopPost=-/usr/bin/docker kill twitter-connector-deploy
+ExecStopPost=-/usr/bin/docker rm twitter-connector-deploy
+TimeoutStartSec=30m
+
+[X-Fleet]
+MachineMetadata=container_type=web
