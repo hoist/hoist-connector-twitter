@@ -31,7 +31,7 @@ test:
     - docker kill hoist-connector-twitter-test; true;
     - docker rm hoist-connector-twitter-test; true;
     - docker run -d --name mongodb mongo
-    - docker run -t --link mongodb:db --name hoist-connector-twitter-test --entrypoint gulp hoist/connector-twitter:${CIRCLE_BRANCH//feature\//} test
+    - docker run -t -E NODE_CONFIG=$NODE_CONFIG --link mongodb:db --name hoist-connector-twitter-test --entrypoint gulp hoist/connector-twitter:${CIRCLE_BRANCH//feature\//} test
   post:
     - docker cp hoist-connector-twitter-test:/usr/src/app/coverage ~/
 general:
