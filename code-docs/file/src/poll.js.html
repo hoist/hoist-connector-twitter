@@ -110,9 +110,9 @@ class TwitterPoller {
         if (!(this._context.authorization)) {
           this._logger.warn(&apos;Connector needs auth and no auth set&apos;);
           if (!lastPolled) {
-            lastPolled = moment().toDate();
+            lastPolled = new Moment().toDate();
           }
-          this._context.subscription.delayTill(moment(lastPolled).add(frequency, &apos;seconds&apos;).toDate());
+          this._context.subscription.delayTill(new Moment(lastPolled).add(frequency, &apos;seconds&apos;).toDate());
           throw new ConnectorRequiresAuthorizationError();
         }
       });
