@@ -81,7 +81,7 @@ class TwitterPoller {
       return this.pollMentions();
     } else if (endpoint.toLowerCase() === "directmessage") {
       return this.pollDirectMessages();
-    } else if (endpoint.toLowerCase() === "tweet"){
+    } else if (endpoint.toLowerCase() === "tweet") {
       return this.pollTweets();
     }
   }
@@ -106,7 +106,7 @@ class TwitterPoller {
               this._logger.info('processing mentions');
               return Promise.all(mentions.map((mention) => {
 
-                if (endpointMeta && mention.id > endpointMeta.lastId) {
+                if (endpointMeta && (!endpointMeta.lastId || mention.id > endpointMeta.lastId)) {
                   if (mention.id > latest.id) {
                     this._logger.info({
                       id: mention.id
@@ -149,16 +149,16 @@ class TwitterPoller {
           path = path + "&since_id=" + endpointMeta.lastId;
         }
         return this._connector.get(path)
-          .then((mentions) => {
+          .then((tweets) => {
             this._logger.info({
-              mentions: mentions.length
-            }, 'got mentions');
-            if (mentions.length > 0) {
-              let latest = mentions[0];
-              this._logger.info('processing mentions');
-              return Promise.all(mentions.map((mention) => {
+              tweets: tweets.length
+            }, 'got tweets');
+            if (tweets.length > 0) {
+              let latest = tweets[0];
+              this._logger.info('processing tweets');
+              return Promise.all(tweets.map((mention) => {
 
-                if (endpointMeta && mention.id > endpointMeta.lastId) {
+                if (endpointMeta && (!endpointMeta.lastId || mention.id > endpointMeta.lastId)) {
                   if (mention.id > latest.id) {
                     this._logger.info({
                       id: mention.id
