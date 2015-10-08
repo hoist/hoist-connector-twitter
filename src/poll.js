@@ -166,7 +166,7 @@ class TwitterPoller {
                     latest = mention;
                   }
                   this._logger.info('processing mention');
-                  return this.processMention(mention);
+                  return this.processTweet(mention);
                 } else {
                   this._logger.info({
                     mention: mention
@@ -184,7 +184,7 @@ class TwitterPoller {
   }
   processTweet(tweet) {
     this._logger.info({
-      mention: mention.id
+      tweet: tweet.id
     }, 'raising event for new tweet');
     var eventName = `${this._context.connectorKey}:new:tweet`;
     return this.emit(eventName, tweet);

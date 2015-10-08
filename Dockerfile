@@ -22,5 +22,8 @@ ADD . /usr/src/app
 RUN chown -R hoist:hoist /usr/src/app
 USER hoist
 
+RUN gulp transpile
+
+
 #start the deploy script
 CMD [ "./deploy.sh"]
