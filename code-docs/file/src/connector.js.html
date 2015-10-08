@@ -67,7 +67,7 @@ let overrides = {
   accessTokenUri: &apos;https://api.twitter.com/oauth/access_token&apos;,
   authorizationUri: &apos;https://api.twitter.com/oauth/authorize&apos;
 };
-
+let baseUri = &apos;https://api.twitter.com/1.1&apos;;
 /**
  * A Hoist Connector for connecting to GitHub
  * @extends {OAuthConnectorBase}
@@ -85,11 +85,19 @@ export default class TwitterConnector extends OAuthConnectorBase {
     this._clientId = configuration.clientId;
   }
   get(path) {
-    let baseUri = &apos;https://api.twitter.com/1.1&apos;;
+
     this._logger.info({
       path
     }, &apos;performing a get request&apos;);
     return this._performRequest(&apos;GET&apos;, `${baseUri}${path}`).then((result) =&gt; {
+      return JSON.parse(result[0]);
+    });
+  }
+  post(path, body) {
+    this._logger.info({
+      path
+    }, &apos;performing a post request&apos;);
+    return this._performRequest(&apos;POST&apos;, `${baseUri}${path}`, body, &apos;application/json&apos;).then((result) =&gt; {
       return JSON.parse(result[0]);
     });
   }

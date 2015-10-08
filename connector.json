@@ -30,6 +30,10 @@
       "docs": "https://dev.twitter.com/rest/reference/get/statuses/mentions_timeline",
       "subscribe": true,
       "events": ["new"]
+    },
+    "tweet": {
+      "subscribe": true,
+      "events": ["new"]
     }
   }
 }

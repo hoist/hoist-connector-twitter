@@ -1,20 +1,21 @@
 {
-  "coverage": "50%",
-  "expectCount": 4,
+  "coverage": "40%",
+  "expectCount": 5,
   "actualCount": 2,
   "files": {
     "src/connector.js": {
-      "expectCount": 3,
+      "expectCount": 4,
       "actualCount": 2,
       "undocumentLines": [
-        32
+        32,
+        41
       ]
     },
     "src/poll.js": {
       "expectCount": 1,
       "actualCount": 0,
       "undocumentLines": [
-        140
+        194
       ]
     }
   }

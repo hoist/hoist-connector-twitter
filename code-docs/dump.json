@@ -9,7 +9,7 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import {\n  OAuthConnectorBase\n}\nfrom '@hoist/oauth-connector';\nimport {\n  merge\n}\nfrom 'lodash';\n\nlet overrides = {\n  requestTokenUri: 'https://api.twitter.com/oauth/request_token',\n  accessTokenUri: 'https://api.twitter.com/oauth/access_token',\n  authorizationUri: 'https://api.twitter.com/oauth/authorize'\n};\n\n/**\n * A Hoist Connector for connecting to GitHub\n * @extends {OAuthConnectorBase}\n */\nexport default class TwitterConnector extends OAuthConnectorBase {\n\n  /**\n   * create a new connector\n   * @param {object} configuration - the configuration properties to use\n   * @param {string} configuration.consumerKey - the OAuth2 consumer key\n   * @param {string} configuration.consumerSecret - the OAuth consumer secret\n   */\n  constructor(configuration) {\n    super(merge({}, configuration, overrides));\n    this._clientId = configuration.clientId;\n  }\n  get(path) {\n    let baseUri = 'https://api.twitter.com/1.1';\n    this._logger.info({\n      path\n    }, 'performing a get request');\n    return this._performRequest('GET', `${baseUri}${path}`).then((result) => {\n      return JSON.parse(result[0]);\n    });\n  }\n}\n"
+    "content": "import {\n  OAuthConnectorBase\n}\nfrom '@hoist/oauth-connector';\nimport {\n  merge\n}\nfrom 'lodash';\n\nlet overrides = {\n  requestTokenUri: 'https://api.twitter.com/oauth/request_token',\n  accessTokenUri: 'https://api.twitter.com/oauth/access_token',\n  authorizationUri: 'https://api.twitter.com/oauth/authorize'\n};\nlet baseUri = 'https://api.twitter.com/1.1';\n/**\n * A Hoist Connector for connecting to GitHub\n * @extends {OAuthConnectorBase}\n */\nexport default class TwitterConnector extends OAuthConnectorBase {\n\n  /**\n   * create a new connector\n   * @param {object} configuration - the configuration properties to use\n   * @param {string} configuration.consumerKey - the OAuth2 consumer key\n   * @param {string} configuration.consumerSecret - the OAuth consumer secret\n   */\n  constructor(configuration) {\n    super(merge({}, configuration, overrides));\n    this._clientId = configuration.clientId;\n  }\n  get(path) {\n\n    this._logger.info({\n      path\n    }, 'performing a get request');\n    return this._performRequest('GET', `${baseUri}${path}`).then((result) => {\n      return JSON.parse(result[0]);\n    });\n  }\n  post(path, body) {\n    this._logger.info({\n      path\n    }, 'performing a post request');\n    return this._performRequest('POST', `${baseUri}${path}`, body, 'application/json').then((result) => {\n      return JSON.parse(result[0]);\n    });\n  }\n}\n"
   },
   {
     "kind": "variable",
@@ -28,6 +28,26 @@
     "type": {
       "types": [
         "*"
+      ]
+    }
+  },
+  {
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "baseUri",
+    "memberof": "src/connector.js",
+    "longname": "src/connector.js~baseUri",
+    "access": null,
+    "export": false,
+    "importPath": "hoist-connector-twitter/src/connector.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 15,
+    "undocument": true,
+    "type": {
+      "types": [
+        "string"
       ]
     }
   },
@@ -137,6 +157,38 @@
     "generator": false
   },
   {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "post",
+    "memberof": "src/connector.js~TwitterConnector",
+    "longname": "src/connector.js~TwitterConnector#post",
+    "access": null,
+    "description": null,
+    "lineNumber": 41,
+    "undocument": true,
+    "params": [
+      {
+        "name": "path",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "body",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
     "kind": "file",
     "static": true,
     "variation": null,
@@ -146,7 +198,7 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import TwitterConnector from './connector';\nimport logger from '@hoist/logger';\nimport Moment from 'moment'\nimport errors from '@hoist/errors';\n\n\nvar APILimitReachedError = errors.create({\n  name: 'APILimitReachedError'\n});\n\nvar ConnectorRequiresAuthorizationError = errors.create({\n  name: 'ConnectorRequiresAuthorizationError'\n});\n\nlet frequency = 90; //poll every 90 seconds\n\nclass TwitterPoller {\n  constructor(context) {\n    this._logger = logger.child({\n      cls: this.constructor.name,\n      subscription: context.subscription._id,\n      application: context.application._id\n    });\n    this._context = context;\n    this._connector = new TwitterConnector(context.settings);\n  }\n  poll() {\n    return this.assertCanPoll()\n      .then(() => {\n        this._context.subscription.set('lastPolled', Moment.utc().format());\n      })\n      .then(() => {\n        return this.pollSubscription()\n      }).catch((err) => {\n        this._logger.error(err);\n        if (!(err instanceof APILimitReachedError) && !(err instanceof ConnectorRequiresAuthorizationError)) {\n          this._logger.alert(err);\n        }\n      });\n  }\n  assertCanPoll() {\n    var lastPolled = this._context.subscription.get('lastPolled');\n    return Promise.resolve()\n      .then(() => {\n        this._logger.info({\n          lastPolled: lastPolled\n        }, 'checking if the poll can happen');\n        if (lastPolled && new Moment(lastPolled).isAfter(new Moment().subtract(frequency, 'seconds'))) {\n          this._logger.warn('Poller limit reached');\n          this._context.subscription.delayTill(new Moment(lastPolled).add(frequency, 'seconds').toDate());\n          throw new APILimitReachedError();\n        }\n      }).then(() => {\n        this._logger.info('checking credentials');\n        if (!(this._context.authorization)) {\n          this._logger.warn('Connector needs auth and no auth set');\n          if (!lastPolled) {\n            lastPolled = new Moment().toDate();\n          }\n          this._context.subscription.delayTill(new Moment(lastPolled).add(frequency, 'seconds').toDate());\n          throw new ConnectorRequiresAuthorizationError();\n        }\n      });\n  }\n  pollSubscription() {\n    return Promise.resolve()\n      .then(() => {\n        this._logger.info('setting connector authorization');\n        return this._connector.authorize(this._context.authorization);\n      }).then(() => {\n        this._logger.info('polling endpoints');\n        return Promise.all(this._context.subscription.endpoints.map((endpoint) => {\n          return this.pollEndpoint(endpoint);\n        }));\n      }).then(() => {\n        this._logger.info('subscription polled');\n      });\n  }\n  pollEndpoint(endpoint) {\n    if (endpoint.toLowerCase() === \"mentions\") {\n      return this.pollMentions();\n    } else if (endpoint.toLowerCase() === \"directmessages\") {\n      return this.pollDirectMessages();\n    }\n  }\n  pollMentions() {\n    return Promise.resolve()\n      .then(() => {\n        let endpointMeta = this._context.subscription.get('mentions');\n        if (!endpointMeta) {\n          endpointMeta = {}\n        }\n        let path = \"/statuses/mentions_timeline.json?contributor_details=true\";\n        if (endpointMeta.lastId) {\n          path = path + \"&since_id=\" + endpointMeta.lastId;\n        }\n        return this._connector.get(path)\n          .then((mentions) => {\n            this._logger.info({\n              mentions: mentions.length\n            }, 'got mentions');\n            if (mentions.length > 0) {\n              let latest = mentions[0];\n              this._logger.info('processing mentions');\n              return Promise.all(mentions.map((mention) => {\n\n                if (endpointMeta && mention.id > endpointMeta.lastId) {\n                  if (mention.id > latest.id) {\n                    this._logger.info({\n                      id: mention.id\n                    }, 'updating id');\n                    latest = mention;\n                  }\n                  this._logger.info('processing mention');\n                  return this.processMention(mention);\n                } else {\n                  this._logger.info({\n                    mention: mention\n                  }, 'mention id was less than last id')\n                }\n              })).then(() => {\n                endpointMeta.lastId = latest.id;\n                return this._context.subscription.set('mentions', endpointMeta);\n              });\n            } else {\n              this._logger.info('no mentions to process');\n            }\n          });\n      })\n  }\n  processMention(mention) {\n    this._logger.info({\n      mention: mention.id\n    }, 'raising event for new mention');\n    var eventName = `${this._context.connectorKey}:new:mention`;\n    return this.emit(eventName, mention);\n  }\n}\n\nexport default function (context, raiseMethod) {\n  let poller = new TwitterPoller(context);\n  poller.emit = raiseMethod;\n  return poller.poll();\n};\n"
+    "content": "import TwitterConnector from './connector';\nimport logger from '@hoist/logger';\nimport Moment from 'moment'\nimport errors from '@hoist/errors';\n\n\nvar APILimitReachedError = errors.create({\n  name: 'APILimitReachedError'\n});\n\nvar ConnectorRequiresAuthorizationError = errors.create({\n  name: 'ConnectorRequiresAuthorizationError'\n});\n\nlet frequency = 90; //poll every 90 seconds\n\nclass TwitterPoller {\n  constructor(context) {\n    this._logger = logger.child({\n      cls: this.constructor.name,\n      subscription: context.subscription._id,\n      application: context.application._id\n    });\n    this._context = context;\n    this._connector = new TwitterConnector(context.settings);\n  }\n  poll() {\n    return this.assertCanPoll()\n      .then(() => {\n        return this._context.subscription.set('lastPolled', Moment.utc().format());\n      })\n      .then(() => {\n        return this.pollSubscription()\n      }).catch((err) => {\n        this._logger.error(err);\n        if (!(err instanceof APILimitReachedError) && !(err instanceof ConnectorRequiresAuthorizationError)) {\n          this._logger.alert(err);\n        }\n      });\n  }\n  assertCanPoll() {\n    var lastPolled = this._context.subscription.get('lastPolled');\n    return Promise.resolve()\n      .then(() => {\n        this._logger.info({\n          lastPolled: lastPolled\n        }, 'checking if the poll can happen');\n        if (lastPolled && new Moment(lastPolled).isAfter(new Moment().subtract(frequency, 'seconds'))) {\n          this._logger.warn('Poller limit reached');\n          this._context.subscription.delayTill(new Moment(lastPolled).add(frequency, 'seconds').toDate());\n          throw new APILimitReachedError();\n        }\n      }).then(() => {\n        this._logger.info('checking credentials');\n        if (!(this._context.authorization)) {\n          this._logger.warn('Connector needs auth and no auth set');\n          if (!lastPolled) {\n            lastPolled = new Moment().toDate();\n          }\n          this._context.subscription.delayTill(new Moment(lastPolled).add(frequency, 'seconds').toDate());\n          throw new ConnectorRequiresAuthorizationError();\n        }\n      });\n  }\n  pollSubscription() {\n    return Promise.resolve()\n      .then(() => {\n        this._logger.info('setting connector authorization');\n        return this._connector.authorize(this._context.authorization);\n      }).then(() => {\n        this._logger.info('polling endpoints');\n        return Promise.all(this._context.subscription.endpoints.map((endpoint) => {\n          return this.pollEndpoint(endpoint);\n        }));\n      }).then(() => {\n        this._logger.info('subscription polled');\n      });\n  }\n  pollEndpoint(endpoint) {\n    if (endpoint.toLowerCase() === \"mention\") {\n      return this.pollMentions();\n    } else if (endpoint.toLowerCase() === \"directmessage\") {\n      return this.pollDirectMessages();\n    } else if (endpoint.toLowerCase() === \"tweet\"){\n      return this.pollTweets();\n    }\n  }\n  pollMentions() {\n    return Promise.resolve()\n      .then(() => {\n        let endpointMeta = this._context.subscription.get('mentions');\n        if (!endpointMeta) {\n          endpointMeta = {}\n        }\n        let path = \"/statuses/mentions_timeline.json?contributor_details=true\";\n        if (endpointMeta.lastId) {\n          path = path + \"&since_id=\" + endpointMeta.lastId;\n        }\n        return this._connector.get(path)\n          .then((mentions) => {\n            this._logger.info({\n              mentions: mentions.length\n            }, 'got mentions');\n            if (mentions.length > 0) {\n              let latest = mentions[0];\n              this._logger.info('processing mentions');\n              return Promise.all(mentions.map((mention) => {\n\n                if (endpointMeta && mention.id > endpointMeta.lastId) {\n                  if (mention.id > latest.id) {\n                    this._logger.info({\n                      id: mention.id\n                    }, 'updating id');\n                    latest = mention;\n                  }\n                  this._logger.info('processing mention');\n                  return this.processMention(mention);\n                } else {\n                  this._logger.info({\n                    mention: mention\n                  }, 'mention id was less than last id')\n                }\n              })).then(() => {\n                endpointMeta.lastId = latest.id;\n                return this._context.subscription.set('mentions', endpointMeta);\n              });\n            } else {\n              this._logger.info('no mentions to process');\n            }\n          });\n      })\n  }\n  processMention(mention) {\n    this._logger.info({\n      mention: mention.id\n    }, 'raising event for new mention');\n    var eventName = `${this._context.connectorKey}:new:mention`;\n    return this.emit(eventName, mention);\n  }\n  pollTweets() {\n    return Promise.resolve()\n      .then(() => {\n        let endpointMeta = this._context.subscription.get('tweets');\n        if (!endpointMeta) {\n          endpointMeta = {}\n        }\n        let path = \"/statuses/user_timeline.json?contributor_details=true\";\n        if (endpointMeta.lastId) {\n          path = path + \"&since_id=\" + endpointMeta.lastId;\n        }\n        return this._connector.get(path)\n          .then((mentions) => {\n            this._logger.info({\n              mentions: mentions.length\n            }, 'got mentions');\n            if (mentions.length > 0) {\n              let latest = mentions[0];\n              this._logger.info('processing mentions');\n              return Promise.all(mentions.map((mention) => {\n\n                if (endpointMeta && mention.id > endpointMeta.lastId) {\n                  if (mention.id > latest.id) {\n                    this._logger.info({\n                      id: mention.id\n                    }, 'updating id');\n                    latest = mention;\n                  }\n                  this._logger.info('processing mention');\n                  return this.processMention(mention);\n                } else {\n                  this._logger.info({\n                    mention: mention\n                  }, 'mention id was less than last id')\n                }\n              })).then(() => {\n                endpointMeta.lastId = latest.id;\n                return this._context.subscription.set('tweets', endpointMeta);\n              });\n            } else {\n              this._logger.info('no tweets to process');\n            }\n          });\n      })\n  }\n  processTweet(tweet) {\n    this._logger.info({\n      mention: mention.id\n    }, 'raising event for new tweet');\n    var eventName = `${this._context.connectorKey}:new:tweet`;\n    return this.emit(eventName, tweet);\n  }\n}\n\nexport default function (context, raiseMethod) {\n  let poller = new TwitterPoller(context);\n  poller.emit = raiseMethod;\n  return poller.poll();\n};\n"
   },
   {
     "kind": "variable",
@@ -388,7 +440,7 @@
     "longname": "src/poll.js~TwitterPoller#pollMentions",
     "access": null,
     "description": null,
-    "lineNumber": 86,
+    "lineNumber": 88,
     "undocument": true,
     "params": [],
     "return": {
@@ -407,11 +459,56 @@
     "longname": "src/poll.js~TwitterPoller#processMention",
     "access": null,
     "description": null,
-    "lineNumber": 131,
+    "lineNumber": 133,
     "undocument": true,
     "params": [
       {
         "name": "mention",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "pollTweets",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#pollTweets",
+    "access": null,
+    "description": null,
+    "lineNumber": 140,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "processTweet",
+    "memberof": "src/poll.js~TwitterPoller",
+    "longname": "src/poll.js~TwitterPoller#processTweet",
+    "access": null,
+    "description": null,
+    "lineNumber": 185,
+    "undocument": true,
+    "params": [
+      {
+        "name": "tweet",
         "types": [
           "*"
         ]
@@ -436,7 +533,7 @@
     "importPath": "hoist-connector-twitter/src/poll.js",
     "importStyle": "poll",
     "description": null,
-    "lineNumber": 140,
+    "lineNumber": 194,
     "undocument": true,
     "params": [
       {

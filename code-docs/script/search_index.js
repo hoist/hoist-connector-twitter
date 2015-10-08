@@ -408,6 +408,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/connector.js~twitterconnector#post",
+    "class/src/connector.js~TwitterConnector.html#instance-method-post",
+    "src/connector.js~TwitterConnector#post",
+    "method"
+  ],
+  [
     "src/poll.js",
     "file/src/poll.js.html",
     "src/poll.js",

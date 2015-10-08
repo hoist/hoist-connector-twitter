@@ -82,7 +82,7 @@ class TwitterPoller {
   poll() {
     return this.assertCanPoll()
       .then(() =&gt; {
-        this._context.subscription.set(&apos;lastPolled&apos;, Moment.utc().format());
+        return this._context.subscription.set(&apos;lastPolled&apos;, Moment.utc().format());
       })
       .then(() =&gt; {
         return this.pollSubscription()
@@ -132,10 +132,12 @@ class TwitterPoller {
       });
   }
   pollEndpoint(endpoint) {
-    if (endpoint.toLowerCase() === &quot;mentions&quot;) {
+    if (endpoint.toLowerCase() === &quot;mention&quot;) {
       return this.pollMentions();
-    } else if (endpoint.toLowerCase() === &quot;directmessages&quot;) {
+    } else if (endpoint.toLowerCase() === &quot;directmessage&quot;) {
       return this.pollDirectMessages();
+    } else if (endpoint.toLowerCase() === &quot;tweet&quot;){
+      return this.pollTweets();
     }
   }
   pollMentions() {
@@ -189,6 +191,58 @@ class TwitterPoller {
     }, &apos;raising event for new mention&apos;);
     var eventName = `${this._context.connectorKey}:new:mention`;
     return this.emit(eventName, mention);
+  }
+  pollTweets() {
+    return Promise.resolve()
+      .then(() =&gt; {
+        let endpointMeta = this._context.subscription.get(&apos;tweets&apos;);
+        if (!endpointMeta) {
+          endpointMeta = {}
+        }
+        let path = &quot;/statuses/user_timeline.json?contributor_details=true&quot;;
+        if (endpointMeta.lastId) {
+          path = path + &quot;&amp;since_id=&quot; + endpointMeta.lastId;
+        }
+        return this._connector.get(path)
+          .then((mentions) =&gt; {
+            this._logger.info({
+              mentions: mentions.length
+            }, &apos;got mentions&apos;);
+            if (mentions.length &gt; 0) {
+              let latest = mentions[0];
+              this._logger.info(&apos;processing mentions&apos;);
+              return Promise.all(mentions.map((mention) =&gt; {
+
+                if (endpointMeta &amp;&amp; mention.id &gt; endpointMeta.lastId) {
+                  if (mention.id &gt; latest.id) {
+                    this._logger.info({
+                      id: mention.id
+                    }, &apos;updating id&apos;);
+                    latest = mention;
+                  }
+                  this._logger.info(&apos;processing mention&apos;);
+                  return this.processMention(mention);
+                } else {
+                  this._logger.info({
+                    mention: mention
+                  }, &apos;mention id was less than last id&apos;)
+                }
+              })).then(() =&gt; {
+                endpointMeta.lastId = latest.id;
+                return this._context.subscription.set(&apos;tweets&apos;, endpointMeta);
+              });
+            } else {
+              this._logger.info(&apos;no tweets to process&apos;);
+            }
+          });
+      })
+  }
+  processTweet(tweet) {
+    this._logger.info({
+      mention: mention.id
+    }, &apos;raising event for new tweet&apos;);
+    var eventName = `${this._context.connectorKey}:new:tweet`;
+    return this.emit(eventName, tweet);
   }
 }
 
