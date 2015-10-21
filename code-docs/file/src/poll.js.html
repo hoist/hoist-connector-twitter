@@ -136,7 +136,7 @@ class TwitterPoller {
       return this.pollMentions();
     } else if (endpoint.toLowerCase() === &quot;directmessage&quot;) {
       return this.pollDirectMessages();
-    } else if (endpoint.toLowerCase() === &quot;tweet&quot;){
+    } else if (endpoint.toLowerCase() === &quot;tweet&quot;) {
       return this.pollTweets();
     }
   }
@@ -161,7 +161,7 @@ class TwitterPoller {
               this._logger.info(&apos;processing mentions&apos;);
               return Promise.all(mentions.map((mention) =&gt; {
 
-                if (endpointMeta &amp;&amp; mention.id &gt; endpointMeta.lastId) {
+                if (endpointMeta &amp;&amp; (!endpointMeta.lastId || mention.id &gt; endpointMeta.lastId)) {
                   if (mention.id &gt; latest.id) {
                     this._logger.info({
                       id: mention.id
@@ -204,16 +204,16 @@ class TwitterPoller {
           path = path + &quot;&amp;since_id=&quot; + endpointMeta.lastId;
         }
         return this._connector.get(path)
-          .then((mentions) =&gt; {
+          .then((tweets) =&gt; {
             this._logger.info({
-              mentions: mentions.length
-            }, &apos;got mentions&apos;);
-            if (mentions.length &gt; 0) {
-              let latest = mentions[0];
-              this._logger.info(&apos;processing mentions&apos;);
-              return Promise.all(mentions.map((mention) =&gt; {
+              tweets: tweets.length
+            }, &apos;got tweets&apos;);
+            if (tweets.length &gt; 0) {
+              let latest = tweets[0];
+              this._logger.info(&apos;processing tweets&apos;);
+              return Promise.all(tweets.map((mention) =&gt; {
 
-                if (endpointMeta &amp;&amp; mention.id &gt; endpointMeta.lastId) {
+                if (endpointMeta &amp;&amp; (!endpointMeta.lastId || mention.id &gt; endpointMeta.lastId)) {
                   if (mention.id &gt; latest.id) {
                     this._logger.info({
                       id: mention.id
@@ -221,7 +221,7 @@ class TwitterPoller {
                     latest = mention;
                   }
                   this._logger.info(&apos;processing mention&apos;);
-                  return this.processMention(mention);
+                  return this.processTweet(mention);
                 } else {
                   this._logger.info({
                     mention: mention
@@ -239,7 +239,7 @@ class TwitterPoller {
   }
   processTweet(tweet) {
     this._logger.info({
-      mention: mention.id
+      tweet: tweet.id
     }, &apos;raising event for new tweet&apos;);
     var eventName = `${this._context.connectorKey}:new:tweet`;
     return this.emit(eventName, tweet);

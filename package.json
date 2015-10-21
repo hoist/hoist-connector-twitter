@@ -44,7 +44,7 @@
   "dependencies": {
     "@hoist/errors": "^1.0.3",
     "@hoist/logger": "^1.0.5",
-    "@hoist/oauth-connector": "^1.0.6",
+    "@hoist/oauth-connector": "^1.1.0",
     "bluebird": "^2.9.34",
     "lodash": "^3.10.1",
     "moment": "^2.10.6"
