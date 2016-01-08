@@ -1,8 +1,21 @@
 class EditForm extends React.Component {
-  render(){
+  constructor (props) {
+    super(props);
+    if (!props.connector) {
+      this.state = {
+        mode: 'connect'
+      };
+    }
+  }
+  connect () {
+    this.props.onConnect();
+  }
+  render () {
     return (
       <div>
-       Edit Form for Twitter
+        <div className="button" onClick={() => {
+          this.connect();
+        }}>connect</div>
       </div>
     );
   }

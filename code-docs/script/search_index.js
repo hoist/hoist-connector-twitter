@@ -426,6 +426,12 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/views/edit.js",
+    "file/src/views/edit.js.html",
+    "src/views/edit.js",
+    "file"
+  ],
+  [
     "tests/integration_tests/auth_tests.js",
     "test-file/tests/integration_tests/auth_tests.js.html",
     "tests/integration_tests/auth_tests.js",
