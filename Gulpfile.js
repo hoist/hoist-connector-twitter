@@ -17,4 +17,4 @@ gulp.task('default', function () {
     'mocha-server');
 });
 
-gulp.task('build', ['transpile', 'webpack'])
+gulp.task('build', ['transpile'])
