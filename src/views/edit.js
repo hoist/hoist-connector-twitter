@@ -12,13 +12,16 @@ class EditForm extends React.Component {
     }
   }
   connect () {
+    console.log('calling on connect');
     this.props.onConnect();
   }
   render () {
     return (
       <C.View>
         <C.View.Sidebar>
-          <UI.FormElements.Button text="Save" onClick={this.connect} />
+          <UI.FormElements.Button text="Save" onClick={()=>{
+              return this.connect();
+            }} />
         </C.View.Sidebar>
         <C.View.Content>
           <h1>Adding a MYOB AccountRight Connector</h1>
