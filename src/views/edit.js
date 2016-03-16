@@ -13,6 +13,7 @@ class EditForm extends React.Component {
     }
   }
   connect () {
+    console.log('calling on connect');
     this.props.onConnect();
   }
   browse () {
@@ -22,7 +23,9 @@ class EditForm extends React.Component {
     return (
       <C.Page default="setup" onBrowse={this.browse}>
         <C.Panel name="Setup" slug="setup">
-          <UI.FormElements.Button text="Connect" type="large" onClick={this.connect} />
+          <UI.FormElements.Button text="Connect" type="large" onClick={()=>{
+              return this.connect();
+            }} />
         </C.Panel>
         <C.Panel name="Advanced" slug="advanced">
           <C.List>
