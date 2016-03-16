@@ -593,7 +593,7 @@
     "access": null,
     "description": null,
     "lineNumber": 3,
-    "content": "/* globals UI */\n\nvar C = UI.Connectors;\n\nclass EditForm extends React.Component {\n  constructor (props) {\n    super(props);\n    if (!props.connector) {\n      this.state = {\n        mode: 'connect'\n      };\n    }\n  }\n  connect () {\n    this.props.onConnect();\n  }\n  render () {\n    return (\n      <C.View>\n        <C.View.Sidebar>\n          <UI.FormElements.Button text=\"Save\" onClick={this.connect} />\n        </C.View.Sidebar>\n        <C.View.Content>\n          <h1>Adding a MYOB AccountRight Connector</h1>\n          <ul>\n            <li>Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/</li>\n            <li>Log into your my.myob.com account and choose the correct country.</li>\n            <li>Select 'Developer' from the top menu on the page.</li>\n            <li>Click on 'Register App'.</li>\n            <li>In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.</li>\n            <li>Copy the Key into here</li>\n          </ul>\n        </C.View.Content>\n      </C.View>\n    );\n  }\n}\n\nwindow.EditForm = EditForm;\n"
+    "content": "/* globals UI */\n\nvar C = UI.Views.Connector;\n\nclass EditForm extends React.Component {\n  constructor (props) {\n    super(props);\n    this.browse = this.browse.bind(this);\n    if (!props.connector) {\n      this.state = {\n        mode: 'connect'\n      };\n    }\n  }\n  connect () {\n    this.props.onConnect();\n  }\n  browse () {\n    this.props.onBrowse();\n  }\n  render () {\n    return (\n      <C.Page default=\"setup\" onBrowse={this.browse}>\n        <C.Panel name=\"Setup\" slug=\"setup\">\n          <UI.FormElements.Button text=\"Connect\" type=\"large\" onClick={this.connect} />\n        </C.Panel>\n        <C.Panel name=\"Advanced\" slug=\"advanced\">\n          <C.List>\n            <C.Item>Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/</C.Item>\n            <C.Item>Log into your my.myob.com account and choose the correct country.</C.Item>\n            <C.Item>Select 'Developer' from the top menu on the page.</C.Item>\n            <C.Item>Click on 'Register App'.</C.Item>\n            <C.Item>In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.</C.Item>\n            <C.Item>Copy the API Key into here:</C.Item>\n            <C.Item>Copy the Secret from 'API Secret' into here:</C.Item>\n          </C.List>\n        </C.Panel>\n      </C.Page>\n    );\n  }\n}\n\n\nwindow.EditForm = EditForm;\n"
   },
   {
     "__docId__": 27,
@@ -663,12 +663,12 @@
     "kind": "member",
     "static": false,
     "variation": null,
-    "name": "state",
+    "name": "browse",
     "memberof": "src/views/edit.js~EditForm",
-    "longname": "src/views/edit.js~EditForm#state",
+    "longname": "src/views/edit.js~EditForm#browse",
     "access": null,
     "description": null,
-    "lineNumber": 9,
+    "lineNumber": 8,
     "undocument": true,
     "type": {
       "types": [
@@ -678,6 +678,24 @@
   },
   {
     "__docId__": 31,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/views/edit.js~EditForm",
+    "longname": "src/views/edit.js~EditForm#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 32,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -686,13 +704,28 @@
     "longname": "src/views/edit.js~EditForm#connect",
     "access": null,
     "description": null,
-    "lineNumber": 14,
+    "lineNumber": 15,
     "undocument": true,
     "params": [],
     "generator": false
   },
   {
-    "__docId__": 32,
+    "__docId__": 33,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "browse",
+    "memberof": "src/views/edit.js~EditForm",
+    "longname": "src/views/edit.js~EditForm#browse",
+    "access": null,
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 34,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -701,7 +734,7 @@
     "longname": "src/views/edit.js~EditForm#render",
     "access": null,
     "description": null,
-    "lineNumber": 17,
+    "lineNumber": 21,
     "undocument": true,
     "params": [],
     "return": {
@@ -712,7 +745,7 @@
     "generator": false
   },
   {
-    "__docId__": 34,
+    "__docId__": 36,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -725,7 +758,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 35,
+    "__docId__": 37,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -738,7 +771,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 36,
+    "__docId__": 38,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -751,7 +784,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 37,
+    "__docId__": 39,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -764,7 +797,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 38,
+    "__docId__": 40,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -777,7 +810,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 39,
+    "__docId__": 41,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -790,7 +823,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 40,
+    "__docId__": 42,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -803,7 +836,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 41,
+    "__docId__": 43,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -816,7 +849,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 42,
+    "__docId__": 44,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -829,7 +862,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 43,
+    "__docId__": 45,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -842,7 +875,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 44,
+    "__docId__": 46,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -855,7 +888,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 45,
+    "__docId__": 47,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -868,7 +901,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 46,
+    "__docId__": 48,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -881,7 +914,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 47,
+    "__docId__": 49,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -894,7 +927,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 48,
+    "__docId__": 50,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -907,7 +940,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 49,
+    "__docId__": 51,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -920,7 +953,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 50,
+    "__docId__": 52,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -933,7 +966,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 51,
+    "__docId__": 53,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -946,7 +979,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 52,
+    "__docId__": 54,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -959,7 +992,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 53,
+    "__docId__": 55,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -972,7 +1005,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 54,
+    "__docId__": 56,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -985,7 +1018,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 55,
+    "__docId__": 57,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -998,7 +1031,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 56,
+    "__docId__": 58,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1011,7 +1044,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 57,
+    "__docId__": 59,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1024,7 +1057,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 58,
+    "__docId__": 60,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1037,7 +1070,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 59,
+    "__docId__": 61,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1050,7 +1083,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 60,
+    "__docId__": 62,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1063,7 +1096,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 61,
+    "__docId__": 63,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1076,7 +1109,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 62,
+    "__docId__": 64,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1089,7 +1122,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 63,
+    "__docId__": 65,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1102,7 +1135,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 64,
+    "__docId__": 66,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1115,7 +1148,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 65,
+    "__docId__": 67,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1128,7 +1161,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 66,
+    "__docId__": 68,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1141,7 +1174,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 67,
+    "__docId__": 69,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1154,7 +1187,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 68,
+    "__docId__": 70,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1167,7 +1200,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 69,
+    "__docId__": 71,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1180,7 +1213,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 70,
+    "__docId__": 72,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1193,7 +1226,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 71,
+    "__docId__": 73,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1206,7 +1239,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 74,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1219,7 +1252,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 73,
+    "__docId__": 75,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1232,7 +1265,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 74,
+    "__docId__": 76,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1245,7 +1278,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 75,
+    "__docId__": 77,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1258,7 +1291,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 76,
+    "__docId__": 78,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1271,7 +1304,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 77,
+    "__docId__": 79,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1284,7 +1317,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 78,
+    "__docId__": 80,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1297,7 +1330,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 79,
+    "__docId__": 81,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1310,7 +1343,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 80,
+    "__docId__": 82,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1323,7 +1356,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 82,
+    "__docId__": 84,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1336,7 +1369,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 83,
+    "__docId__": 85,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1349,7 +1382,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 84,
+    "__docId__": 86,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1362,7 +1395,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 85,
+    "__docId__": 87,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1375,7 +1408,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 86,
+    "__docId__": 88,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1388,7 +1421,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 87,
+    "__docId__": 89,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1401,7 +1434,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 88,
+    "__docId__": 90,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1414,7 +1447,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 89,
+    "__docId__": 91,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1427,7 +1460,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 90,
+    "__docId__": 92,
     "kind": "testFile",
     "static": true,
     "variation": null,
@@ -1440,7 +1473,7 @@
     "content": "import TwitterConnector from '../../lib/connector';\nimport sinon from 'sinon';\nimport {\n  expect\n}\nfrom 'chai';\nimport config from 'config';\n\ndescribe('authorization steps', () => {\n  let connector;\n  let consumerKey = config.get('consumerKey');\n  let consumerSecret = config.get('consumerSecret');\n  before(() => {\n    connector = new TwitterConnector({\n      consumerKey,\n      consumerSecret\n    });\n  });\n  describe('on first bounce', () => {\n    let bounce;\n    before(() => {\n      bounce = {\n        get: function () {\n          return undefined;\n        },\n        delete: function () {\n          return Promise.resolve(null);\n        },\n        set: function () {\n          console.log('set', arguments);\n          return Promise.resolve(null);\n        },\n        redirect: function () {\n          console.log('redirect', arguments);\n          return Promise.resolve(null);\n        },\n        done: function () {\n          console.log('done', arguments);\n          return Promise.resolve(null);\n        }\n      };\n      sinon.spy(bounce, 'get');\n      sinon.spy(bounce, 'set');\n      sinon.spy(bounce, 'redirect');\n      return connector.receiveBounce(bounce);\n    });\n    it('should save request token', () => {\n      return expect(bounce.set).to.have.been.calledWith('RequestToken');\n    });\n    it('should save request token secret', () => {\n      return expect(bounce.set).to.have.been.calledWith('RequestTokenSecret');\n    });\n    it('should save current step', () => {\n      return expect(bounce.set).to.have.been.calledWith('currentStep', 'RequestToken');\n    });\n    it('should receive a redirect', () => {\n      return expect(bounce.redirect).to.have.been.calledWith(`https://api.twitter.com/oauth/authorize?oauth_token=${bounce.set.getCall(0).args[1]}`);\n    });\n  });\n});\n"
   },
   {
-    "__docId__": 91,
+    "__docId__": 93,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -1454,7 +1487,7 @@
     "lineNumber": 9
   },
   {
-    "__docId__": 92,
+    "__docId__": 94,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -1468,7 +1501,7 @@
     "lineNumber": 19
   },
   {
-    "__docId__": 93,
+    "__docId__": 95,
     "kind": "testIt",
     "static": true,
     "variation": null,
@@ -1482,7 +1515,7 @@
     "lineNumber": 47
   },
   {
-    "__docId__": 94,
+    "__docId__": 96,
     "kind": "testIt",
     "static": true,
     "variation": null,
@@ -1496,7 +1529,7 @@
     "lineNumber": 50
   },
   {
-    "__docId__": 95,
+    "__docId__": 97,
     "kind": "testIt",
     "static": true,
     "variation": null,
@@ -1510,7 +1543,7 @@
     "lineNumber": 53
   },
   {
-    "__docId__": 96,
+    "__docId__": 98,
     "kind": "testIt",
     "static": true,
     "variation": null,
@@ -1524,7 +1557,7 @@
     "lineNumber": 56
   },
   {
-    "__docId__": 97,
+    "__docId__": 99,
     "kind": "testFile",
     "static": true,
     "variation": null,
@@ -1537,7 +1570,7 @@
     "content": "'use strict';\nimport TwitterConnector from '../../lib/connector';\nimport {\n  functions\n}\nfrom 'lodash';\nimport {\n  expect\n}\nfrom 'chai';\n\nfunction TestES5() {\n\n}\nTestES5.prototype.get = function () {\n\n}\n\ndescribe('Connector', () => {\n  let _connector;\n  before(() => {\n    _connector = new TwitterConnector({});\n  })\n  describe('functions', () => {\n    it('should have methods expected', () => {\n      console.log(_connector.get);\n      console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(new TestES5())));\n      console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(_connector)));\n    })\n  });\n});\n"
   },
   {
-    "__docId__": 98,
+    "__docId__": 100,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -1551,7 +1584,7 @@
     "lineNumber": 19
   },
   {
-    "__docId__": 99,
+    "__docId__": 101,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -1565,7 +1598,7 @@
     "lineNumber": 24
   },
   {
-    "__docId__": 100,
+    "__docId__": 102,
     "kind": "testIt",
     "static": true,
     "variation": null,

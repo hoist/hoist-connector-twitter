@@ -41,11 +41,12 @@
 <div class="content" data-ice="content"><h1 data-ice="title">src/views/edit.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/* globals UI */
 
-var C = UI.Connectors;
+var C = UI.Views.Connector;
 
 class EditForm extends React.Component {
   constructor (props) {
     super(props);
+    this.browse = this.browse.bind(this);
     if (!props.connector) {
       this.state = {
         mode: &apos;connect&apos;
@@ -55,27 +56,31 @@ class EditForm extends React.Component {
   connect () {
     this.props.onConnect();
   }
+  browse () {
+    this.props.onBrowse();
+  }
   render () {
     return (
-      &lt;C.View&gt;
-        &lt;C.View.Sidebar&gt;
-          &lt;UI.FormElements.Button text=&quot;Save&quot; onClick={this.connect} /&gt;
-        &lt;/C.View.Sidebar&gt;
-        &lt;C.View.Content&gt;
-          &lt;h1&gt;Adding a MYOB AccountRight Connector&lt;/h1&gt;
-          &lt;ul&gt;
-            &lt;li&gt;Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/&lt;/li&gt;
-            &lt;li&gt;Log into your my.myob.com account and choose the correct country.&lt;/li&gt;
-            &lt;li&gt;Select &apos;Developer&apos; from the top menu on the page.&lt;/li&gt;
-            &lt;li&gt;Click on &apos;Register App&apos;.&lt;/li&gt;
-            &lt;li&gt;In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.&lt;/li&gt;
-            &lt;li&gt;Copy the Key into here&lt;/li&gt;
-          &lt;/ul&gt;
-        &lt;/C.View.Content&gt;
-      &lt;/C.View&gt;
+      &lt;C.Page default=&quot;setup&quot; onBrowse={this.browse}&gt;
+        &lt;C.Panel name=&quot;Setup&quot; slug=&quot;setup&quot;&gt;
+          &lt;UI.FormElements.Button text=&quot;Connect&quot; type=&quot;large&quot; onClick={this.connect} /&gt;
+        &lt;/C.Panel&gt;
+        &lt;C.Panel name=&quot;Advanced&quot; slug=&quot;advanced&quot;&gt;
+          &lt;C.List&gt;
+            &lt;C.Item&gt;Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/&lt;/C.Item&gt;
+            &lt;C.Item&gt;Log into your my.myob.com account and choose the correct country.&lt;/C.Item&gt;
+            &lt;C.Item&gt;Select &apos;Developer&apos; from the top menu on the page.&lt;/C.Item&gt;
+            &lt;C.Item&gt;Click on &apos;Register App&apos;.&lt;/C.Item&gt;
+            &lt;C.Item&gt;In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.&lt;/C.Item&gt;
+            &lt;C.Item&gt;Copy the API Key into here:&lt;/C.Item&gt;
+            &lt;C.Item&gt;Copy the Secret from &apos;API Secret&apos; into here:&lt;/C.Item&gt;
+          &lt;/C.List&gt;
+        &lt;/C.Panel&gt;
+      &lt;/C.Page&gt;
     );
   }
 }
+
 
 window.EditForm = EditForm;
 </code></pre>
