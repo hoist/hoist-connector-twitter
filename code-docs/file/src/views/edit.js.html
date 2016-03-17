@@ -54,6 +54,7 @@ class EditForm extends React.Component {
     }
   }
   connect () {
+    console.log(&apos;calling on connect&apos;);
     this.props.onConnect();
   }
   browse () {
@@ -63,7 +64,9 @@ class EditForm extends React.Component {
     return (
       &lt;C.Page default=&quot;setup&quot; onBrowse={this.browse}&gt;
         &lt;C.Panel name=&quot;Setup&quot; slug=&quot;setup&quot;&gt;
-          &lt;UI.FormElements.Button text=&quot;Connect&quot; type=&quot;large&quot; onClick={this.connect} /&gt;
+          &lt;UI.FormElements.Button text=&quot;Connect&quot; type=&quot;large&quot; onClick={()=&gt;{
+              return this.connect();
+            }} /&gt;
         &lt;/C.Panel&gt;
         &lt;C.Panel name=&quot;Advanced&quot; slug=&quot;advanced&quot;&gt;
           &lt;C.List&gt;

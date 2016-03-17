@@ -10,7 +10,7 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import {\n  OAuthConnectorBase\n}\nfrom '@hoist/oauth-connector';\nimport {\n  merge\n}\nfrom 'lodash';\n\nlet overrides = {\n  requestTokenUri: 'https://api.twitter.com/oauth/request_token',\n  accessTokenUri: 'https://api.twitter.com/oauth/access_token',\n  authorizationUri: 'https://api.twitter.com/oauth/authorize'\n};\nlet baseUri = 'https://api.twitter.com/1.1';\n/**\n * A Hoist Connector for connecting to GitHub\n * @extends {OAuthConnectorBase}\n */\nexport default class TwitterConnector extends OAuthConnectorBase {\n\n  /**\n   * create a new connector\n   * @param {object} configuration - the configuration properties to use\n   * @param {string} configuration.consumerKey - the OAuth2 consumer key\n   * @param {string} configuration.consumerSecret - the OAuth consumer secret\n   */\n  constructor(configuration) {\n    super(merge({}, configuration, overrides));\n    this._clientId = configuration.clientId;\n  }\n  get(path) {\n\n    this._logger.info({\n      path\n    }, 'performing a get request');\n    return this._performRequest('GET', `${baseUri}${path}`).then((result) => {\n      return JSON.parse(result[0]);\n    });\n  }\n  post(path, body) {\n    this._logger.info({\n      path\n    }, 'performing a post request');\n    return this._performRequest('POST', `${baseUri}${path}`, body, 'application/json').then((result) => {\n      return JSON.parse(result[0]);\n    });\n  }\n}\n"
+    "content": "import {\n  OAuthConnectorBase\n}\nfrom '@hoist/oauth-connector';\nimport {\n  merge\n}\nfrom 'lodash';\n\nlet overrides = {\n  requestTokenUri: 'https://api.twitter.com/oauth/request_token',\n  accessTokenUri: 'https://api.twitter.com/oauth/access_token',\n  authorizationUri: 'https://api.twitter.com/oauth/authorize'\n};\nlet baseUri = 'https://api.twitter.com/1.1';\n/**\n * A Hoist Connector for connecting to GitHub\n * @extends {OAuthConnectorBase}\n */\nexport default class TwitterConnector extends OAuthConnectorBase {\n\n  /**\n   * create a new connector\n   * @param {object} configuration - the configuration properties to use\n   * @param {string} configuration.consumerKey - the OAuth2 consumer key\n   * @param {string} configuration.consumerSecret - the OAuth consumer secret\n   */\n  constructor(configuration) {\n    super(merge({}, configuration, overrides));\n    this._clientId = configuration.clientId;\n  }\n  get(path) {\n\n    this._logger.info({\n      path\n    }, 'performing a get request');\n    return this._performRequest('GET', `${baseUri}${path}`).then((result) => {\n      return JSON.parse(result);\n    });\n  }\n  post(path, body) {\n    this._logger.info({\n      path\n    }, 'performing a post request');\n    return this._performRequest('POST', `${baseUri}${path}`, body, 'application/json').then((result) => {\n      return JSON.parse(result);\n    });\n  }\n}\nmodule.exports = TwitterConnector;\n"
   },
   {
     "__docId__": 1,
@@ -593,7 +593,7 @@
     "access": null,
     "description": null,
     "lineNumber": 3,
-    "content": "/* globals UI */\n\nvar C = UI.Views.Connector;\n\nclass EditForm extends React.Component {\n  constructor (props) {\n    super(props);\n    this.browse = this.browse.bind(this);\n    if (!props.connector) {\n      this.state = {\n        mode: 'connect'\n      };\n    }\n  }\n  connect () {\n    this.props.onConnect();\n  }\n  browse () {\n    this.props.onBrowse();\n  }\n  render () {\n    return (\n      <C.Page default=\"setup\" onBrowse={this.browse}>\n        <C.Panel name=\"Setup\" slug=\"setup\">\n          <UI.FormElements.Button text=\"Connect\" type=\"large\" onClick={this.connect} />\n        </C.Panel>\n        <C.Panel name=\"Advanced\" slug=\"advanced\">\n          <C.List>\n            <C.Item>Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/</C.Item>\n            <C.Item>Log into your my.myob.com account and choose the correct country.</C.Item>\n            <C.Item>Select 'Developer' from the top menu on the page.</C.Item>\n            <C.Item>Click on 'Register App'.</C.Item>\n            <C.Item>In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.</C.Item>\n            <C.Item>Copy the API Key into here:</C.Item>\n            <C.Item>Copy the Secret from 'API Secret' into here:</C.Item>\n          </C.List>\n        </C.Panel>\n      </C.Page>\n    );\n  }\n}\n\n\nwindow.EditForm = EditForm;\n"
+    "content": "/* globals UI */\n\nvar C = UI.Views.Connector;\n\nclass EditForm extends React.Component {\n  constructor (props) {\n    super(props);\n    this.browse = this.browse.bind(this);\n    if (!props.connector) {\n      this.state = {\n        mode: 'connect'\n      };\n    }\n  }\n  connect () {\n    console.log('calling on connect');\n    this.props.onConnect();\n  }\n  browse () {\n    this.props.onBrowse();\n  }\n  render () {\n    return (\n      <C.Page default=\"setup\" onBrowse={this.browse}>\n        <C.Panel name=\"Setup\" slug=\"setup\">\n          <UI.FormElements.Button text=\"Connect\" type=\"large\" onClick={()=>{\n              return this.connect();\n            }} />\n        </C.Panel>\n        <C.Panel name=\"Advanced\" slug=\"advanced\">\n          <C.List>\n            <C.Item>Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/</C.Item>\n            <C.Item>Log into your my.myob.com account and choose the correct country.</C.Item>\n            <C.Item>Select 'Developer' from the top menu on the page.</C.Item>\n            <C.Item>Click on 'Register App'.</C.Item>\n            <C.Item>In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.</C.Item>\n            <C.Item>Copy the API Key into here:</C.Item>\n            <C.Item>Copy the Secret from 'API Secret' into here:</C.Item>\n          </C.List>\n        </C.Panel>\n      </C.Page>\n    );\n  }\n}\n\n\nwindow.EditForm = EditForm;\n"
   },
   {
     "__docId__": 27,
@@ -719,7 +719,7 @@
     "longname": "src/views/edit.js~EditForm#browse",
     "access": null,
     "description": null,
-    "lineNumber": 18,
+    "lineNumber": 19,
     "undocument": true,
     "params": [],
     "generator": false
@@ -734,7 +734,7 @@
     "longname": "src/views/edit.js~EditForm#render",
     "access": null,
     "description": null,
-    "lineNumber": 21,
+    "lineNumber": 22,
     "undocument": true,
     "params": [],
     "return": {
