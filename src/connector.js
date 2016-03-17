@@ -35,7 +35,7 @@ export default class TwitterConnector extends OAuthConnectorBase {
       path
     }, 'performing a get request');
     return this._performRequest('GET', `${baseUri}${path}`).then((result) => {
-      return JSON.parse(result[0]);
+      return JSON.parse(result);
     });
   }
   post(path, body) {
@@ -43,7 +43,8 @@ export default class TwitterConnector extends OAuthConnectorBase {
       path
     }, 'performing a post request');
     return this._performRequest('POST', `${baseUri}${path}`, body, 'application/json').then((result) => {
-      return JSON.parse(result[0]);
+      return JSON.parse(result);
     });
   }
 }
+module.exports = TwitterConnector;

@@ -294,6 +294,12 @@ window.esdocSearchIndex = [
     "external"
   ],
   [
+    "builtinexternal/webapiexternal.js~audiocontext",
+    "external/index.html",
+    "BuiltinExternal/WebAPIExternal.js~AudioContext",
+    "external"
+  ],
+  [
     "builtinexternal/webapiexternal.js~canvasrenderingcontext2d",
     "external/index.html",
     "BuiltinExternal/WebAPIExternal.js~CanvasRenderingContext2D",
@@ -417,6 +423,12 @@ window.esdocSearchIndex = [
     "src/poll.js",
     "file/src/poll.js.html",
     "src/poll.js",
+    "file"
+  ],
+  [
+    "src/views/edit.js",
+    "file/src/views/edit.js.html",
+    "src/views/edit.js",
     "file"
   ],
   [

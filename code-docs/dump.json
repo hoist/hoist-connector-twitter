@@ -1,5 +1,6 @@
 [
   {
+    "__docId__": 0,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -9,9 +10,10 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import {\n  OAuthConnectorBase\n}\nfrom '@hoist/oauth-connector';\nimport {\n  merge\n}\nfrom 'lodash';\n\nlet overrides = {\n  requestTokenUri: 'https://api.twitter.com/oauth/request_token',\n  accessTokenUri: 'https://api.twitter.com/oauth/access_token',\n  authorizationUri: 'https://api.twitter.com/oauth/authorize'\n};\nlet baseUri = 'https://api.twitter.com/1.1';\n/**\n * A Hoist Connector for connecting to GitHub\n * @extends {OAuthConnectorBase}\n */\nexport default class TwitterConnector extends OAuthConnectorBase {\n\n  /**\n   * create a new connector\n   * @param {object} configuration - the configuration properties to use\n   * @param {string} configuration.consumerKey - the OAuth2 consumer key\n   * @param {string} configuration.consumerSecret - the OAuth consumer secret\n   */\n  constructor(configuration) {\n    super(merge({}, configuration, overrides));\n    this._clientId = configuration.clientId;\n  }\n  get(path) {\n\n    this._logger.info({\n      path\n    }, 'performing a get request');\n    return this._performRequest('GET', `${baseUri}${path}`).then((result) => {\n      return JSON.parse(result[0]);\n    });\n  }\n  post(path, body) {\n    this._logger.info({\n      path\n    }, 'performing a post request');\n    return this._performRequest('POST', `${baseUri}${path}`, body, 'application/json').then((result) => {\n      return JSON.parse(result[0]);\n    });\n  }\n}\n"
+    "content": "import {\n  OAuthConnectorBase\n}\nfrom '@hoist/oauth-connector';\nimport {\n  merge\n}\nfrom 'lodash';\n\nlet overrides = {\n  requestTokenUri: 'https://api.twitter.com/oauth/request_token',\n  accessTokenUri: 'https://api.twitter.com/oauth/access_token',\n  authorizationUri: 'https://api.twitter.com/oauth/authorize'\n};\nlet baseUri = 'https://api.twitter.com/1.1';\n/**\n * A Hoist Connector for connecting to GitHub\n * @extends {OAuthConnectorBase}\n */\nexport default class TwitterConnector extends OAuthConnectorBase {\n\n  /**\n   * create a new connector\n   * @param {object} configuration - the configuration properties to use\n   * @param {string} configuration.consumerKey - the OAuth2 consumer key\n   * @param {string} configuration.consumerSecret - the OAuth consumer secret\n   */\n  constructor(configuration) {\n    super(merge({}, configuration, overrides));\n    this._clientId = configuration.clientId;\n  }\n  get(path) {\n\n    this._logger.info({\n      path\n    }, 'performing a get request');\n    return this._performRequest('GET', `${baseUri}${path}`).then((result) => {\n      return JSON.parse(result);\n    });\n  }\n  post(path, body) {\n    this._logger.info({\n      path\n    }, 'performing a post request');\n    return this._performRequest('POST', `${baseUri}${path}`, body, 'application/json').then((result) => {\n      return JSON.parse(result);\n    });\n  }\n}\nmodule.exports = TwitterConnector;\n"
   },
   {
+    "__docId__": 1,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -32,6 +34,7 @@
     }
   },
   {
+    "__docId__": 2,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -52,6 +55,7 @@
     }
   },
   {
+    "__docId__": 3,
     "kind": "class",
     "static": true,
     "variation": null,
@@ -70,6 +74,7 @@
     ]
   },
   {
+    "__docId__": 4,
     "kind": "constructor",
     "static": false,
     "variation": null,
@@ -114,6 +119,7 @@
     "generator": false
   },
   {
+    "__docId__": 5,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -131,6 +137,7 @@
     }
   },
   {
+    "__docId__": 6,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -157,6 +164,7 @@
     "generator": false
   },
   {
+    "__docId__": 7,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -189,6 +197,7 @@
     "generator": false
   },
   {
+    "__docId__": 8,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -201,6 +210,7 @@
     "content": "import TwitterConnector from './connector';\nimport logger from '@hoist/logger';\nimport Moment from 'moment'\nimport errors from '@hoist/errors';\n\n\nvar APILimitReachedError = errors.create({\n  name: 'APILimitReachedError'\n});\n\nvar ConnectorRequiresAuthorizationError = errors.create({\n  name: 'ConnectorRequiresAuthorizationError'\n});\n\nlet frequency = 90; //poll every 90 seconds\n\nclass TwitterPoller {\n  constructor(context) {\n    this._logger = logger.child({\n      cls: this.constructor.name,\n      subscription: context.subscription._id,\n      application: context.application._id\n    });\n    this._context = context;\n    this._connector = new TwitterConnector(context.settings);\n  }\n  poll() {\n    return this.assertCanPoll()\n      .then(() => {\n        return this._context.subscription.set('lastPolled', Moment.utc().format());\n      })\n      .then(() => {\n        return this.pollSubscription()\n      }).catch((err) => {\n        this._logger.error(err);\n        if (!(err instanceof APILimitReachedError) && !(err instanceof ConnectorRequiresAuthorizationError)) {\n          this._logger.alert(err);\n        }\n      });\n  }\n  assertCanPoll() {\n    var lastPolled = this._context.subscription.get('lastPolled');\n    return Promise.resolve()\n      .then(() => {\n        this._logger.info({\n          lastPolled: lastPolled\n        }, 'checking if the poll can happen');\n        if (lastPolled && new Moment(lastPolled).isAfter(new Moment().subtract(frequency, 'seconds'))) {\n          this._logger.warn('Poller limit reached');\n          this._context.subscription.delayTill(new Moment(lastPolled).add(frequency, 'seconds').toDate());\n          throw new APILimitReachedError();\n        }\n      }).then(() => {\n        this._logger.info('checking credentials');\n        if (!(this._context.authorization)) {\n          this._logger.warn('Connector needs auth and no auth set');\n          if (!lastPolled) {\n            lastPolled = new Moment().toDate();\n          }\n          this._context.subscription.delayTill(new Moment(lastPolled).add(frequency, 'seconds').toDate());\n          throw new ConnectorRequiresAuthorizationError();\n        }\n      });\n  }\n  pollSubscription() {\n    return Promise.resolve()\n      .then(() => {\n        this._logger.info('setting connector authorization');\n        return this._connector.authorize(this._context.authorization);\n      }).then(() => {\n        this._logger.info('polling endpoints');\n        return Promise.all(this._context.subscription.endpoints.map((endpoint) => {\n          return this.pollEndpoint(endpoint);\n        }));\n      }).then(() => {\n        this._logger.info('subscription polled');\n      });\n  }\n  pollEndpoint(endpoint) {\n    if (endpoint.toLowerCase() === \"mention\") {\n      return this.pollMentions();\n    } else if (endpoint.toLowerCase() === \"directmessage\") {\n      return this.pollDirectMessages();\n    } else if (endpoint.toLowerCase() === \"tweet\") {\n      return this.pollTweets();\n    }\n  }\n  pollMentions() {\n    return Promise.resolve()\n      .then(() => {\n        let endpointMeta = this._context.subscription.get('mentions');\n        if (!endpointMeta) {\n          endpointMeta = {}\n        }\n        let path = \"/statuses/mentions_timeline.json?contributor_details=true\";\n        if (endpointMeta.lastId) {\n          path = path + \"&since_id=\" + endpointMeta.lastId;\n        }\n        return this._connector.get(path)\n          .then((mentions) => {\n            this._logger.info({\n              mentions: mentions.length\n            }, 'got mentions');\n            if (mentions.length > 0) {\n              let latest = mentions[0];\n              this._logger.info('processing mentions');\n              return Promise.all(mentions.map((mention) => {\n\n                if (endpointMeta && (!endpointMeta.lastId || mention.id > endpointMeta.lastId)) {\n                  if (mention.id > latest.id) {\n                    this._logger.info({\n                      id: mention.id\n                    }, 'updating id');\n                    latest = mention;\n                  }\n                  this._logger.info('processing mention');\n                  return this.processMention(mention);\n                } else {\n                  this._logger.info({\n                    mention: mention\n                  }, 'mention id was less than last id')\n                }\n              })).then(() => {\n                endpointMeta.lastId = latest.id;\n                return this._context.subscription.set('mentions', endpointMeta);\n              });\n            } else {\n              this._logger.info('no mentions to process');\n            }\n          });\n      })\n  }\n  processMention(mention) {\n    this._logger.info({\n      mention: mention.id\n    }, 'raising event for new mention');\n    var eventName = `${this._context.connectorKey}:new:mention`;\n    return this.emit(eventName, mention);\n  }\n  pollTweets() {\n    return Promise.resolve()\n      .then(() => {\n        let endpointMeta = this._context.subscription.get('tweets');\n        if (!endpointMeta) {\n          endpointMeta = {}\n        }\n        let path = \"/statuses/user_timeline.json?contributor_details=true\";\n        if (endpointMeta.lastId) {\n          path = path + \"&since_id=\" + endpointMeta.lastId;\n        }\n        return this._connector.get(path)\n          .then((tweets) => {\n            this._logger.info({\n              tweets: tweets.length\n            }, 'got tweets');\n            if (tweets.length > 0) {\n              let latest = tweets[0];\n              this._logger.info('processing tweets');\n              return Promise.all(tweets.map((mention) => {\n\n                if (endpointMeta && (!endpointMeta.lastId || mention.id > endpointMeta.lastId)) {\n                  if (mention.id > latest.id) {\n                    this._logger.info({\n                      id: mention.id\n                    }, 'updating id');\n                    latest = mention;\n                  }\n                  this._logger.info('processing mention');\n                  return this.processTweet(mention);\n                } else {\n                  this._logger.info({\n                    mention: mention\n                  }, 'mention id was less than last id')\n                }\n              })).then(() => {\n                endpointMeta.lastId = latest.id;\n                return this._context.subscription.set('tweets', endpointMeta);\n              });\n            } else {\n              this._logger.info('no tweets to process');\n            }\n          });\n      })\n  }\n  processTweet(tweet) {\n    this._logger.info({\n      tweet: tweet.id\n    }, 'raising event for new tweet');\n    var eventName = `${this._context.connectorKey}:new:tweet`;\n    return this.emit(eventName, tweet);\n  }\n}\n\nexport default function (context, raiseMethod) {\n  let poller = new TwitterPoller(context);\n  poller.emit = raiseMethod;\n  return poller.poll();\n};\n"
   },
   {
+    "__docId__": 9,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -221,6 +231,7 @@
     }
   },
   {
+    "__docId__": 10,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -241,6 +252,7 @@
     }
   },
   {
+    "__docId__": 11,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -261,6 +273,7 @@
     }
   },
   {
+    "__docId__": 12,
     "kind": "class",
     "static": true,
     "variation": null,
@@ -277,6 +290,7 @@
     "interface": false
   },
   {
+    "__docId__": 13,
     "kind": "constructor",
     "static": false,
     "variation": null,
@@ -298,6 +312,7 @@
     "generator": false
   },
   {
+    "__docId__": 14,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -315,6 +330,7 @@
     }
   },
   {
+    "__docId__": 15,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -332,6 +348,7 @@
     }
   },
   {
+    "__docId__": 16,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -349,6 +366,7 @@
     }
   },
   {
+    "__docId__": 17,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -368,6 +386,7 @@
     "generator": false
   },
   {
+    "__docId__": 18,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -387,6 +406,7 @@
     "generator": false
   },
   {
+    "__docId__": 19,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -406,6 +426,7 @@
     "generator": false
   },
   {
+    "__docId__": 20,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -432,6 +453,7 @@
     "generator": false
   },
   {
+    "__docId__": 21,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -451,6 +473,7 @@
     "generator": false
   },
   {
+    "__docId__": 22,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -477,6 +500,7 @@
     "generator": false
   },
   {
+    "__docId__": 23,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -496,6 +520,7 @@
     "generator": false
   },
   {
+    "__docId__": 24,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -522,6 +547,7 @@
     "generator": false
   },
   {
+    "__docId__": 25,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -557,6 +583,169 @@
     "generator": false
   },
   {
+    "__docId__": 26,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/views/edit.js",
+    "memberof": null,
+    "longname": "src/views/edit.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 3,
+    "content": "/* globals UI */\n\nvar C = UI.Views.Connector;\n\nclass EditForm extends React.Component {\n  constructor (props) {\n    super(props);\n    this.browse = this.browse.bind(this);\n    if (!props.connector) {\n      this.state = {\n        mode: 'connect'\n      };\n    }\n  }\n  connect () {\n    console.log('calling on connect');\n    this.props.onConnect();\n  }\n  browse () {\n    this.props.onBrowse();\n  }\n  render () {\n    return (\n      <C.Page default=\"setup\" onBrowse={this.browse}>\n        <C.Panel name=\"Setup\" slug=\"setup\">\n          <UI.FormElements.Button text=\"Connect\" type=\"large\" onClick={()=>{\n              return this.connect();\n            }} />\n        </C.Panel>\n        <C.Panel name=\"Advanced\" slug=\"advanced\">\n          <C.List>\n            <C.Item>Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/</C.Item>\n            <C.Item>Log into your my.myob.com account and choose the correct country.</C.Item>\n            <C.Item>Select 'Developer' from the top menu on the page.</C.Item>\n            <C.Item>Click on 'Register App'.</C.Item>\n            <C.Item>In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.</C.Item>\n            <C.Item>Copy the API Key into here:</C.Item>\n            <C.Item>Copy the Secret from 'API Secret' into here:</C.Item>\n          </C.List>\n        </C.Panel>\n      </C.Page>\n    );\n  }\n}\n\n\nwindow.EditForm = EditForm;\n"
+  },
+  {
+    "__docId__": 27,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "C",
+    "memberof": "src/views/edit.js",
+    "longname": "src/views/edit.js~C",
+    "access": null,
+    "export": false,
+    "importPath": "hoist-connector-twitter/src/views/edit.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 28,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "EditForm",
+    "memberof": "src/views/edit.js",
+    "longname": "src/views/edit.js~EditForm",
+    "access": null,
+    "export": false,
+    "importPath": "hoist-connector-twitter/src/views/edit.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "interface": false,
+    "extends": [
+      "React~React.Component"
+    ]
+  },
+  {
+    "__docId__": 29,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/views/edit.js~EditForm",
+    "longname": "src/views/edit.js~EditForm#constructor",
+    "access": null,
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "params": [
+      {
+        "name": "props",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 30,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "browse",
+    "memberof": "src/views/edit.js~EditForm",
+    "longname": "src/views/edit.js~EditForm#browse",
+    "access": null,
+    "description": null,
+    "lineNumber": 8,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 31,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/views/edit.js~EditForm",
+    "longname": "src/views/edit.js~EditForm#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 32,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "connect",
+    "memberof": "src/views/edit.js~EditForm",
+    "longname": "src/views/edit.js~EditForm#connect",
+    "access": null,
+    "description": null,
+    "lineNumber": 15,
+    "undocument": true,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 33,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "browse",
+    "memberof": "src/views/edit.js~EditForm",
+    "longname": "src/views/edit.js~EditForm#browse",
+    "access": null,
+    "description": null,
+    "lineNumber": 19,
+    "undocument": true,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 34,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "render",
+    "memberof": "src/views/edit.js~EditForm",
+    "longname": "src/views/edit.js~EditForm#render",
+    "access": null,
+    "description": null,
+    "lineNumber": 22,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 36,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -565,10 +754,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Infinity",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 37,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -577,10 +767,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~NaN",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 38,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -589,10 +780,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~undefined",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 39,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -601,10 +793,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~null",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 40,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -613,10 +806,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Object",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 41,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -625,10 +819,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~object",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 42,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -637,10 +832,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Function",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 43,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -649,10 +845,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~function",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 44,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -661,10 +858,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Boolean",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 45,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -673,10 +871,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~boolean",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 46,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -685,10 +884,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Symbol",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 47,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -697,10 +897,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Error",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 48,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -709,10 +910,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~EvalError",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 49,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -721,10 +923,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~InternalError",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 50,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -733,10 +936,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~RangeError",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 51,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -745,10 +949,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~ReferenceError",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 52,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -757,10 +962,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~SyntaxError",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 53,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -769,10 +975,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~TypeError",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 54,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -781,10 +988,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~URIError",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 55,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -793,10 +1001,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Number",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 56,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -805,10 +1014,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~number",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 57,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -817,10 +1027,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Date",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 58,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -829,10 +1040,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~String",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 59,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -841,10 +1053,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~string",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 60,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -853,10 +1066,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~RegExp",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 61,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -865,10 +1079,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 62,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -877,10 +1092,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Int8Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 63,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -889,10 +1105,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 64,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -901,10 +1118,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8ClampedArray",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 65,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -913,10 +1131,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Int16Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 66,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -925,10 +1144,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint16Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 67,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -937,10 +1157,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Int32Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 68,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -949,10 +1170,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint32Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 69,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -961,10 +1183,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Float32Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 70,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -973,10 +1196,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Float64Array",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 71,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -985,10 +1209,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Map",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 72,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -997,10 +1222,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Set",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 73,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1009,10 +1235,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakMap",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 74,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1021,10 +1248,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakSet",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 75,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1033,10 +1261,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~ArrayBuffer",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 76,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1045,10 +1274,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~DataView",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 77,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1057,10 +1287,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~JSON",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 78,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1069,10 +1300,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Promise",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 79,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1081,10 +1313,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Generator",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 80,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1093,10 +1326,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~GeneratorFunction",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 81,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1105,10 +1339,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Reflect",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 82,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1117,10 +1352,11 @@
     "memberof": "BuiltinExternal/ECMAScriptExternal.js",
     "longname": "BuiltinExternal/ECMAScriptExternal.js~Proxy",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 84,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1129,10 +1365,11 @@
     "memberof": "BuiltinExternal/WebAPIExternal.js",
     "longname": "BuiltinExternal/WebAPIExternal.js~CanvasRenderingContext2D",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 85,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1141,10 +1378,11 @@
     "memberof": "BuiltinExternal/WebAPIExternal.js",
     "longname": "BuiltinExternal/WebAPIExternal.js~DocumentFragment",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 86,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1153,10 +1391,11 @@
     "memberof": "BuiltinExternal/WebAPIExternal.js",
     "longname": "BuiltinExternal/WebAPIExternal.js~Element",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 87,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1165,10 +1404,11 @@
     "memberof": "BuiltinExternal/WebAPIExternal.js",
     "longname": "BuiltinExternal/WebAPIExternal.js~Event",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 88,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1177,10 +1417,11 @@
     "memberof": "BuiltinExternal/WebAPIExternal.js",
     "longname": "BuiltinExternal/WebAPIExternal.js~Node",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 89,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1189,10 +1430,11 @@
     "memberof": "BuiltinExternal/WebAPIExternal.js",
     "longname": "BuiltinExternal/WebAPIExternal.js~NodeList",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 90,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1201,10 +1443,24 @@
     "memberof": "BuiltinExternal/WebAPIExternal.js",
     "longname": "BuiltinExternal/WebAPIExternal.js~XMLHttpRequest",
     "access": null,
-    "description": null,
+    "description": "",
     "builtinExternal": true
   },
   {
+    "__docId__": 91,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "AudioContext",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/AudioContext",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~AudioContext",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 92,
     "kind": "testFile",
     "static": true,
     "variation": null,
@@ -1217,6 +1473,7 @@
     "content": "import TwitterConnector from '../../lib/connector';\nimport sinon from 'sinon';\nimport {\n  expect\n}\nfrom 'chai';\nimport config from 'config';\n\ndescribe('authorization steps', () => {\n  let connector;\n  let consumerKey = config.get('consumerKey');\n  let consumerSecret = config.get('consumerSecret');\n  before(() => {\n    connector = new TwitterConnector({\n      consumerKey,\n      consumerSecret\n    });\n  });\n  describe('on first bounce', () => {\n    let bounce;\n    before(() => {\n      bounce = {\n        get: function () {\n          return undefined;\n        },\n        delete: function () {\n          return Promise.resolve(null);\n        },\n        set: function () {\n          console.log('set', arguments);\n          return Promise.resolve(null);\n        },\n        redirect: function () {\n          console.log('redirect', arguments);\n          return Promise.resolve(null);\n        },\n        done: function () {\n          console.log('done', arguments);\n          return Promise.resolve(null);\n        }\n      };\n      sinon.spy(bounce, 'get');\n      sinon.spy(bounce, 'set');\n      sinon.spy(bounce, 'redirect');\n      return connector.receiveBounce(bounce);\n    });\n    it('should save request token', () => {\n      return expect(bounce.set).to.have.been.calledWith('RequestToken');\n    });\n    it('should save request token secret', () => {\n      return expect(bounce.set).to.have.been.calledWith('RequestTokenSecret');\n    });\n    it('should save current step', () => {\n      return expect(bounce.set).to.have.been.calledWith('currentStep', 'RequestToken');\n    });\n    it('should receive a redirect', () => {\n      return expect(bounce.redirect).to.have.been.calledWith(`https://api.twitter.com/oauth/authorize?oauth_token=${bounce.set.getCall(0).args[1]}`);\n    });\n  });\n});\n"
   },
   {
+    "__docId__": 93,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -1230,6 +1487,7 @@
     "lineNumber": 9
   },
   {
+    "__docId__": 94,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -1243,6 +1501,7 @@
     "lineNumber": 19
   },
   {
+    "__docId__": 95,
     "kind": "testIt",
     "static": true,
     "variation": null,
@@ -1256,6 +1515,7 @@
     "lineNumber": 47
   },
   {
+    "__docId__": 96,
     "kind": "testIt",
     "static": true,
     "variation": null,
@@ -1269,6 +1529,7 @@
     "lineNumber": 50
   },
   {
+    "__docId__": 97,
     "kind": "testIt",
     "static": true,
     "variation": null,
@@ -1282,6 +1543,7 @@
     "lineNumber": 53
   },
   {
+    "__docId__": 98,
     "kind": "testIt",
     "static": true,
     "variation": null,
@@ -1295,6 +1557,7 @@
     "lineNumber": 56
   },
   {
+    "__docId__": 99,
     "kind": "testFile",
     "static": true,
     "variation": null,
@@ -1307,6 +1570,7 @@
     "content": "'use strict';\nimport TwitterConnector from '../../lib/connector';\nimport {\n  functions\n}\nfrom 'lodash';\nimport {\n  expect\n}\nfrom 'chai';\n\nfunction TestES5() {\n\n}\nTestES5.prototype.get = function () {\n\n}\n\ndescribe('Connector', () => {\n  let _connector;\n  before(() => {\n    _connector = new TwitterConnector({});\n  })\n  describe('functions', () => {\n    it('should have methods expected', () => {\n      console.log(_connector.get);\n      console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(new TestES5())));\n      console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(_connector)));\n    })\n  });\n});\n"
   },
   {
+    "__docId__": 100,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -1320,6 +1584,7 @@
     "lineNumber": 19
   },
   {
+    "__docId__": 101,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -1333,6 +1598,7 @@
     "lineNumber": 24
   },
   {
+    "__docId__": 102,
     "kind": "testIt",
     "static": true,
     "variation": null,

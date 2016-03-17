@@ -1,4 +1,4 @@
-FROM hoist/core-box:1.8
+FROM hoist/core-box:4
 
 USER root
 #copy npmrc to enable login to private npm
@@ -22,7 +22,7 @@ ADD . /usr/src/app
 RUN chown -R hoist:hoist /usr/src/app
 USER hoist
 
-RUN gulp transpile
+RUN gulp build
 
 
 #start the deploy script

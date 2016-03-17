@@ -16,3 +16,5 @@ gulp.task('default', function () {
   return gulp.start('eslint-build', 'esdoc',
     'mocha-server');
 });
+
+gulp.task('build', ['transpile'])
