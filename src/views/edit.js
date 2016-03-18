@@ -21,7 +21,7 @@ class EditForm extends React.Component {
   }
   render () {
     return (
-      <C.Page default="setup" onBrowse={this.browse}>
+      <C.Page default="setup" {...this.props}>
         <C.Panel name="Setup" slug="setup">
           <UI.FormElements.Button text="Connect" type="large" onClick={()=>{
               return this.connect();
