@@ -47,3 +47,5 @@ config/runtime.json
 config/test.json
 .queues
 .npmrc
+lib
+code-docs

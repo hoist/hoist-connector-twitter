@@ -5,7 +5,7 @@ var config = require('config');
 var webpackConfig = {
   devtool: 'eval',
   entry: {
-    edit: ['./src/views/edit.jsx']
+    edit: ['./src/views/edit.js']
   },
   output: {
     path: output,
@@ -14,19 +14,13 @@ var webpackConfig = {
   },
   plugins: [
     new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.optimize.CommonsChunkPlugin('common.js'),
     new webpack.ProvidePlugin({
-      'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+      'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch',
+      'React': 'imports?this=>global!exports?global.React!react',
+      'UI': 'imports?this=>global!exports?global.UI!@hoist/ui'
     }),
     new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.UglifyJsPlugin(),
-    new webpack.DefinePlugin({
-      'process.env': {
-        'NODE_ENV': 'production'
-      },
-      '__DEVTOOLS__': false,
-      build: 'production'
-    })
+    new webpack.optimize.UglifyJsPlugin()
   ],
   module: {
     loaders: [{

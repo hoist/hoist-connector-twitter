@@ -43,5 +43,5 @@ class EditForm extends React.Component {
   }
 }
 
-
-window.EditForm = EditForm;
+export default EditForm;
+global.EditForm = EditForm;

@@ -2,6 +2,7 @@
 var gulp = require('gulp');
 var requireDir = require('require-dir');
 var helpers = require('./gulp/helpers');
+var runSequence = require('run-sequence');
 requireDir('./gulp/tasks', {
   recurse: true
 });
@@ -17,4 +18,8 @@ gulp.task('default', function () {
     'mocha-server');
 });
 
-gulp.task('build', ['transpile'])
+gulp.task('build', (done) => {
+  runSequence('transpile', 'webpack', () => {
+    done();
+  });
+});
