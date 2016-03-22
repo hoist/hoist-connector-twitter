@@ -15,9 +15,7 @@ var webpackConfig = {
   plugins: [
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.ProvidePlugin({
-      'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch',
-      'React': 'imports?this=>global!exports?global.React!react',
-      'UI': 'imports?this=>global!exports?global.UI!@hoist/ui'
+      'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
     }),
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.UglifyJsPlugin()
