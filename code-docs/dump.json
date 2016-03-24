@@ -593,7 +593,7 @@
     "access": null,
     "description": null,
     "lineNumber": 3,
-    "content": "/* globals UI */\n\nvar C = UI.Views.Connector;\n\nclass EditForm extends React.Component {\n  constructor (props) {\n    super(props);\n    this.browse = this.browse.bind(this);\n    if (!props.connector) {\n      this.state = {\n        mode: 'connect'\n      };\n    }\n  }\n  connect () {\n    console.log('calling on connect');\n    this.props.onConnect();\n  }\n  browse () {\n    this.props.onBrowse();\n  }\n  render () {\n    return (\n      <C.Page default=\"setup\" onBrowse={this.browse}>\n        <C.Panel name=\"Setup\" slug=\"setup\">\n          <UI.FormElements.Button text=\"Connect\" type=\"large\" onClick={()=>{\n              return this.connect();\n            }} />\n        </C.Panel>\n        <C.Panel name=\"Advanced\" slug=\"advanced\">\n          <C.List>\n            <C.Item>Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/</C.Item>\n            <C.Item>Log into your my.myob.com account and choose the correct country.</C.Item>\n            <C.Item>Select 'Developer' from the top menu on the page.</C.Item>\n            <C.Item>Click on 'Register App'.</C.Item>\n            <C.Item>In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.</C.Item>\n            <C.Item>Copy the API Key into here:</C.Item>\n            <C.Item>Copy the Secret from 'API Secret' into here:</C.Item>\n          </C.List>\n        </C.Panel>\n      </C.Page>\n    );\n  }\n}\n\n\nwindow.EditForm = EditForm;\n"
+    "content": "/* globals UI */\n\nvar C = UI.Views.Connector;\n\nclass EditForm extends React.Component {\n  constructor (props) {\n    super(props);\n    this.browse = this.browse.bind(this);\n    if (!props.connector) {\n      this.state = {\n        mode: 'connect'\n      };\n    }\n  }\n  connect () {\n    console.log('calling on connect');\n    this.props.onConnect();\n  }\n  browse () {\n    this.props.onBrowse();\n  }\n  render () {\n    return (\n      <C.Page default=\"setup\" {...this.props}>\n        <C.Panel name=\"Setup\" slug=\"setup\">\n          <UI.FormElements.Button text=\"Connect\" type=\"large\" onClick={()=>{\n              return this.connect();\n            }} />\n        </C.Panel>\n        <C.Panel name=\"Advanced\" slug=\"advanced\">\n          <C.List>\n            <C.Item>Register for MYOB developer access at http://developer.myob.com/contact/register-for-myobapi-access/</C.Item>\n            <C.Item>Log into your my.myob.com account and choose the correct country.</C.Item>\n            <C.Item>Select 'Developer' from the top menu on the page.</C.Item>\n            <C.Item>Click on 'Register App'.</C.Item>\n            <C.Item>In Redirect URL use https://bouncer.hoist.io/bounce, fill out the rest of the form and click Register App.</C.Item>\n            <C.Item>Copy the API Key into here:</C.Item>\n            <C.Item>Copy the Secret from 'API Secret' into here:</C.Item>\n          </C.List>\n        </C.Panel>\n      </C.Page>\n    );\n  }\n}\n\nexport default EditForm;\nglobal.EditForm = EditForm;\n"
   },
   {
     "__docId__": 27,
@@ -625,9 +625,9 @@
     "memberof": "src/views/edit.js",
     "longname": "src/views/edit.js~EditForm",
     "access": null,
-    "export": false,
+    "export": true,
     "importPath": "hoist-connector-twitter/src/views/edit.js",
-    "importStyle": null,
+    "importStyle": "EditForm",
     "description": null,
     "lineNumber": 5,
     "undocument": true,
