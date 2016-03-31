@@ -2,7 +2,7 @@
 
 var C = UI.Views.Connector;
 
-class EditForm extends React.Component {
+class EditForm extends C.View {
   constructor(props) {
     super(props);
     this.state = {
@@ -24,29 +24,16 @@ class EditForm extends React.Component {
             }} />
         </C.Panel>
         {this.props.connectorInstance ? <C.Panel name="Events" slug="events">
-          <div style={{
-            borderBottom:'1px solid #F1F1F1',
-            marginBottom:'25px'
-          }}>
-            <span style={{
-              fontSize:15,
-              color:'#666666',
-              display:'block',
-              marginBottom:5
-            }}>Check the boxes of the events you want to subscribe to.</span>
-            <span style={{
-              fontSize:11,
-              color:'#B3B3B3',
-              display:'block',
-              marginBottom:20
-            }}>Checking a box will automatically subscribe you to that event.</span>
-          </div>
+        <C.EventsGrid.Header
+          title="Check the boxes of the events you want to subscribe to."
+          subTitle="Checking a box will automatically subscribe you to that event." />
           <C.EventsGrid
-            events={['twitter:new:mention', 'twitter:new:tweet']}
-            subscriptions={['twitter:new:mention']}
+            events={this.getAvailableEvents()}
+            subscriptions={this.getSubscribedEvents()}
             onSubscribe={this.props.onSubscribe} />
         </C.Panel> : <C.Panel name="Events" slug="events">
-          Come back later for Events
+          <C.EventsGrid.Header
+            title="Events are available once you've connected." />
         </C.Panel>}
       </C.Page>
     );
