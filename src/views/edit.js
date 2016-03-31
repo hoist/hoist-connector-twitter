@@ -11,13 +11,9 @@ class EditForm extends React.Component {
     if (!props.connector) {
       this.state.mode = 'connect';
     }
-    this.update = this.update.bind(this);
   }
   connect() {
     this.props.onConnect();
-  }
-  update(event) {
-    this.props.onSubscribe({name: event.target.name, subscribed: event.target.checked});
   }
   render() {
     return (
@@ -28,21 +24,27 @@ class EditForm extends React.Component {
             }} />
         </C.Panel>
         {this.props.connectorInstance ? <C.Panel name="Events" slug="events">
-          <span>Check the boxes of the events you want to subscribe to.</span>
-          <form>
-            <table onChange={this.update}>
-              <tbody>
-                <tr>
-                  <td><input type="checkbox" name="twitter:new:mention"/></td>
-                  <td>twitter:new:mention</td>
-                </tr>
-                <tr>
-                  <td><input type="checkbox" name="twitter:new:tweet"/></td>
-                  <td>twitter:new:tweet</td>
-                </tr>
-              </tbody>
-            </table>
-          </form>
+          <div style={{
+            borderBottom:'1px solid #F1F1F1',
+            marginBottom:'25px'
+          }}>
+            <span style={{
+              fontSize:15,
+              color:'#666666',
+              display:'block',
+              marginBottom:5
+            }}>Check the boxes of the events you want to subscribe to.</span>
+            <span style={{
+              fontSize:11,
+              color:'#B3B3B3',
+              display:'block',
+              marginBottom:20
+            }}>Checking a box will automatically subscribe you to that event.</span>
+          </div>
+          <C.EventsGrid
+            events={['twitter:new:mention', 'twitter:new:tweet']}
+            subscriptions={['twitter:new:mention']}
+            onSubscribe={this.props.onSubscribe} />
         </C.Panel> : <C.Panel name="Events" slug="events">
           Come back later for Events
         </C.Panel>}
