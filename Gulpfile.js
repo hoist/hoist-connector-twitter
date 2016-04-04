@@ -14,8 +14,7 @@ gulp.task('test', ['eslint-build', 'esdoc', 'mocha-server'], function () {
   }
 });
 gulp.task('default', function () {
-  return gulp.start('eslint-build', 'esdoc',
-    'mocha-server');
+  return gulp.start('eslint-build', 'esdoc');
 });
 
 gulp.task('build', (done) => {

@@ -48,4 +48,4 @@ config/test.json
 .queues
 .npmrc
 lib
-code-docs/*
+code-docs
