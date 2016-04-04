@@ -28,8 +28,8 @@ class EditForm extends C.View {
           title="Check the boxes of the events you want to subscribe to."
           subTitle="Checking a box will automatically subscribe you to that event." />
           <C.CheckboxGrid
-            items={this.getAvailableEvents()}
-            checked={this.getSubscribedEvents()}
+            items={this.props.connectorPrototype.events}
+            checked={this.props.connectorInstance.events}
             onChange={this.props.onSubscribe} />
         </C.Panel> : <C.Panel name="Events" slug="events">
           <C.EventsGrid.Header
