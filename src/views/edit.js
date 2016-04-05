@@ -32,7 +32,7 @@ class EditForm extends C.View {
             checked={this.props.connectorInstance.subscribedEvents}
             onChange={this.props.onSubscribe} />
         </C.Panel> : <C.Panel name="Events" slug="events">
-          <C.EventsGrid.Header
+          <C.PageHeader
             title="Events are available once you've connected." />
         </C.Panel>}
       </C.Page>
